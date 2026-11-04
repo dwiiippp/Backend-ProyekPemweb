@@ -175,85 +175,74 @@ Detail checklist per anggota, matriks tabel (siapa menulis/membaca), dan skenari
 3. Baca struct terkait di `internal/model/` dan data di `db/seed.sql` untuk modul Anda.
 4. Kerjakan berurutan: repository → service → handler → template (lihat contoh di [bagian 9](#9-contoh-mengerjakan-satu-fitur-dari-awal)).
 5. Uji manual dengan data seed, jalankan `gofmt -l .`, `go vet ./...`, `go test ./...`, lalu buka PR.
-## 7. Alur kerja Git harian
 
-Semua pekerjaan fitur dilakukan melalui branch masing-masing dan diintegrasikan ke `develop` menggunakan Pull Request. Branch `main` hanya digunakan untuk versi stabil.
+## 7. Alur Kerja Git Harian
 
-### Langkah 1 — Ambil versi terbaru develop
+Repository ini hanya menggunakan dua branch:
+
+- `main` — menyimpan versi stabil aplikasi.
+- `develop` — digunakan seluruh anggota untuk mengembangkan dan mengintegrasikan fitur.
+
+### Langkah 1 — Mengambil versi terbaru
+
+Sebelum mulai bekerja, jalankan:
 
 ```bash
 git checkout develop
 git pull origin develop
 ```
 
-### Langkah 2 — Buat branch pekerjaan
+### Langkah 2 — Mengerjakan modul
+
+Setiap anggota mengerjakan modul sesuai pembagian tugas masing-masing langsung pada branch `develop`.
+
+Hindari mengubah file yang sedang dikerjakan anggota lain tanpa koordinasi.
+
+### Langkah 3 — Melakukan commit
+
+Setelah menyelesaikan perubahan:
 
 ```bash
-git checkout -b feat/kasbon-form
+git add .
+git commit -m "feat(absensi): implementasi input presensi"
 ```
 
-Gunakan penamaan branch sesuai jenis pekerjaan:
+Gunakan pesan commit yang menjelaskan perubahan.
 
-- `feat/<modul>-<deskripsi>` — fitur baru.
-- `fix/<modul>-<deskripsi>` — perbaikan bug.
-- `docs/<deskripsi>` — dokumentasi.
+### Langkah 4 — Sinkronisasi dan push
 
-### Langkah 3 — Kerjakan dan commit
+Sebelum push, ambil perubahan terbaru:
 
 ```bash
-git add internal/handler/kasbon.go templates/kasbon/form.html
-git commit -m "feat(kasbon): tambah form pengajuan kasbon"
+git pull --rebase origin develop
 ```
 
-Lakukan commit secara bertahap sesuai perubahan yang dikerjakan.
-
-### Langkah 4 — Sinkronisasi dengan develop
-
-Sebelum push, ambil perubahan terbaru dari repository:
+Kemudian:
 
 ```bash
-git fetch origin
-git rebase origin/develop
+git push origin develop
 ```
 
 Jika terjadi konflik, selesaikan terlebih dahulu sebelum melanjutkan.
 
-### Langkah 5 — Push branch pekerjaan
+### Langkah 5 — Rilis ke main
 
-```bash
-git push -u origin feat/kasbon-form
-```
+Setelah fitur selesai dan sudah diuji pada `develop`:
 
-### Langkah 6 — Buat Pull Request
-
-Buka GitHub dan buat Pull Request dengan ketentuan:
-
-- **Base:** `develop`
-- **Compare:** branch pekerjaan masing-masing.
-- Pastikan CI berhasil.
-- Isi deskripsi perubahan dan cara pengujian.
-- Minta anggota lain melakukan review.
-- Merge setelah mendapatkan persetujuan.
-
-### Alur rilis ke main
-
-Setelah seluruh fitur selesai diintegrasikan dan diuji pada `develop`:
-
-1. Pastikan aplikasi berjalan dengan baik.
+1. Pastikan seluruh perubahan sudah terintegrasi.
 2. Pastikan CI berhasil.
 3. Buat Pull Request dari `develop` menuju `main`.
-4. Lakukan review.
+4. Lakukan pemeriksaan dan review.
 5. Merge setelah disetujui.
 
 ### Aturan penting
 
+- Hanya gunakan branch `main` dan `develop`.
 - Jangan mengembangkan fitur langsung di `main`.
-- Jangan mengembangkan fitur langsung di `develop`.
-- Semua perubahan fitur harus melalui Pull Request.
-- Jangan melakukan force push ke `main` atau `develop`.
-- Setelah PR selesai di-merge, sinkronkan kembali branch lokal dengan `develop`.
-
-Panduan lengkap kolaborasi Git dapat dilihat pada [`CONTRIBUTING.md`](CONTRIBUTING.md).
+- Semua pekerjaan pengembangan dilakukan di `develop`.
+- Jangan melakukan force push.
+- Selalu sinkronkan perubahan sebelum melakukan push.
+- Koordinasikan perubahan pada file yang digunakan bersama.
 
 ## 8. Panduan menulis kode
 
