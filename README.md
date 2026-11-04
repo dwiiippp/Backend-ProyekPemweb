@@ -3,23 +3,22 @@
 Sistem Penggajian Pekerja Harian dan Shift — **Konveksi Mitra Jaya**
 Project Akhir Web Programming (Topik 3) · Go + MySQL · `net/http` + `html/template`
 
-Dokumen ini adalah panduan lengkap untuk tim backend (3 anggota): dari instalasi sampai alur kerja harian dengan GitHub.
+> **Panduan setup untuk anggota tim backend.** Ikuti bagian 1–3 berurutan sampai *Checklist siap mulai* tercentang semua, baru ambil Issue pertama Anda. Bagian lainnya adalah acuan yang dibuka saat dibutuhkan.
 
 **Daftar isi**
 1. [Gambaran singkat](#1-gambaran-singkat)
 2. [Prasyarat](#2-prasyarat)
 3. [Setup untuk anggota tim](#3-setup-untuk-anggota-tim)
-4. [Setup awal oleh ketua tim](#4-setup-awal-oleh-ketua-tim-sekali-saja)
-5. [Konfigurasi `.env`](#5-konfigurasi-env)
-6. [Struktur proyek](#6-struktur-proyek)
-7. [Pembagian tugas](#7-pembagian-tugas)
-8. [Alur kerja Git harian](#8-alur-kerja-git-harian)
-9. [Panduan menulis kode](#9-panduan-menulis-kode)
-10. [Contoh: mengerjakan satu fitur dari awal](#10-contoh-mengerjakan-satu-fitur-dari-awal)
-11. [Mengubah database / file bersama](#11-mengubah-database--file-bersama)
-12. [Data seed & akun uji](#12-data-seed--akun-uji)
-13. [Testing & CI](#13-testing--ci)
-14. [Troubleshooting](#14-troubleshooting)
+4. [Konfigurasi `.env`](#4-konfigurasi-env)
+5. [Struktur proyek](#5-struktur-proyek)
+6. [Pembagian tugas](#6-pembagian-tugas)
+7. [Alur kerja Git harian](#7-alur-kerja-git-harian)
+8. [Panduan menulis kode](#8-panduan-menulis-kode)
+9. [Contoh: mengerjakan satu fitur dari awal](#9-contoh-mengerjakan-satu-fitur-dari-awal)
+10. [Mengubah database / file bersama](#10-mengubah-database--file-bersama)
+11. [Data seed & akun uji](#11-data-seed--akun-uji)
+12. [Testing & CI](#12-testing--ci)
+13. [Troubleshooting](#13-troubleshooting)
 
 ---
 
@@ -52,7 +51,7 @@ git config --global user.email "email-github-anda@contoh.com"
 
 ## 3. Setup untuk anggota tim
 
-> Ketua tim sudah membuat repo dan mengundang Anda (lihat bagian 4). Terima undangan di email atau di halaman https://github.com/notifications.
+> Ketua tim sudah membuat repo dan mengundang Anda. Terima undangan lewat email atau di https://github.com/notifications. Belum menerima undangan? Hubungi ketua dengan menyebut username GitHub Anda.
 
 **Langkah 1 — Clone repo**
 ```bash
@@ -67,7 +66,7 @@ copy .env.example .env
 # macOS / Linux
 cp .env.example .env
 ```
-Buka `.env`, isi `DB_USER` / `DB_PASS` sesuai MySQL di komputer Anda (lihat [bagian 5](#5-konfigurasi-env)). File `.env` **tidak boleh di-commit** (sudah ada di `.gitignore`).
+Buka `.env`, isi `DB_USER` / `DB_PASS` sesuai MySQL di komputer Anda (lihat [bagian 4](#4-konfigurasi-env)). File `.env` **tidak boleh di-commit** (sudah ada di `.gitignore`).
 
 **Langkah 3 — Buat database dan isi data contoh**
 ```bash
@@ -94,38 +93,24 @@ Buka http://localhost:8080. Dengan `DEV_AUTO_LOGIN_ROLE=admin` di `.env`, Anda l
 ```bash
 go test ./...
 ```
-Jika semua `ok`, lingkungan Anda siap. Lanjut ke [bagian 7](#7-pembagian-tugas) untuk melihat modul milik Anda.
+Jika semua `ok`, lingkungan Anda siap. Lanjut ke *Checklist siap mulai* di bawah.
 
 Template HTML dimuat ulang otomatis di mode development, jadi mengubah file `.html` cukup di-refresh browser. Perubahan kode Go perlu menjalankan ulang `go run ./cmd/web`.
 
-## 4. Setup awal oleh ketua tim (sekali saja)
+### Checklist siap mulai
 
-1. **Verifikasi lokal** — ikuti bagian 3 sampai `go test ./...` lolos.
-2. **Buat `go.sum`** dan commit-nya (CI memerlukannya):
-   ```bash
-   go mod tidy
-   ```
-3. **Buat repo GitHub** bernama `go-penggajian` (tanpa README/.gitignore/license otomatis), lalu push:
-   ```bash
-   git init -b main
-   git add .
-   git status                      # pastikan .env TIDAK terdaftar
-   git commit -m "chore: initial project scaffold"
-   git remote add origin https://github.com/<username>/go-penggajian.git
-   git push -u origin main
-   ```
-4. **Undang anggota:** Settings → Collaborators → Add people (peran *Write*).
-5. **Isi `.github/CODEOWNERS`:** ganti `@anggota1`, `@anggota2`, `@anggota3`, dan `@ketua-tim` dengan username GitHub asli. Commit ke `main` (ini push langsung terakhir sebelum proteksi aktif).
-6. **Proteksi branch `main`:** Settings → Branches → Add rule → pola `main`, centang:
-   - Require a pull request before merging (1 approval)
-   - Require status checks to pass → pilih job **build**
-   - Require review from Code Owners (opsional)
+Centang semuanya sebelum mengambil Issue pertama. Jika ada yang gagal, lihat [Troubleshooting](#13-troubleshooting) atau tanya di grup.
 
-   > Pada akun gratis, proteksi branch di repo *private* tidak ditegakkan. Jadikan repo public, pakai GitHub Student Pack/Pro, atau sepakati aturan "tidak push langsung ke `main`".
-7. **Buat Issues:** salin checklist tiap anggota dari [`docs/PEMBAGIAN_TUGAS.md`](docs/PEMBAGIAN_TUGAS.md) menjadi satu Issue per butir; beri label `anggota-1/2/3` dan assign. Opsional: buat GitHub Project (board) dengan kolom To do / In progress / In review / Done.
-8. **Uji alur PR sekali:** minta satu anggota membuat PR kecil (mis. ubah teks stub miliknya), pastikan CI hijau, direview, dan di-merge. Semua orang lalu `git pull` dari `main`.
-
-## 5. Konfigurasi `.env`
+- [ ] `go version` menampilkan 1.22 atau lebih baru, dan `mysql --version` serta `git --version` berjalan
+- [ ] Repo sudah di-clone dan file `.env` sudah dibuat dari `.env.example`
+- [ ] `schema.sql` dan `seed.sql` sudah diimpor (cek: `mysql -u root -p -e "SELECT COUNT(*) FROM penggajian_mitrajaya.pekerja;"` menghasilkan 4)
+- [ ] `go test ./...` semuanya `ok`
+- [ ] http://localhost:8080 menampilkan dashboard dengan sidebar lengkap
+- [ ] Anda sudah mengganti `DEV_AUTO_LOGIN_ROLE` ke `pekerja`, restart, dan melihat menu pekerja (lalu kembalikan ke `admin`)
+- [ ] Latihan push cabang berhasil: `git checkout -b chore/setup-<nama-anda>`, lalu `git push -u origin chore/setup-<nama-anda>` (tidak perlu membuka PR; hapus cabangnya setelah itu)
+- [ ] Sudah membaca [`CONTRIBUTING.md`](CONTRIBUTING.md) dan bagian anggota Anda di [`docs/PEMBAGIAN_TUGAS.md`](docs/PEMBAGIAN_TUGAS.md)
+- [ ] Ada Issue yang di-assign ke Anda di tab *Issues* repo
+## 4. Konfigurasi `.env`
 
 | Variabel | Default | Keterangan |
 |---|---|---|
@@ -140,7 +125,7 @@ Template HTML dimuat ulang otomatis di mode development, jadi mengubah file `.ht
 
 **Tentang dev auto-login:** Jika terisi, setiap request dianggap sudah login sebagai user seed (`admin` = user id 1, `pekerja` = Budi, user id 2 / pekerja id 1). Fitur ini otomatis mati bila `APP_ENV` bukan `development`. Untuk menguji tampilan pekerja, ganti ke `pekerja` lalu restart server. Setelah modul Auth selesai, uji juga dengan mengosongkannya.
 
-## 6. Struktur proyek
+## 5. Struktur proyek
 
 ```
 go-penggajian/
@@ -168,7 +153,7 @@ go-penggajian/
 
 Aturan emasnya: **satu modul = satu file di handler, service, repository, dan folder di templates.** Contoh modul `kasbon`: `handler/kasbon.go`, `service/kasbon.go`, `repository/kasbon.go`, `templates/kasbon/*.html`.
 
-## 7. Pembagian tugas
+## 6. Pembagian tugas
 
 | Anggota | Fokus | Modul |
 |---|---|---|
@@ -184,7 +169,13 @@ Detail checklist per anggota, matriks tabel (siapa menulis/membaca), dan skenari
 - Login bisa dilewati lewat `DEV_AUTO_LOGIN_ROLE`.
 - Anggota 3 bisa menulis perhitungan gaji sebagai fungsi murni + unit test memakai angka dari seed, tanpa menunggu presensi selesai.
 
-## 8. Alur kerja Git harian
+**Langkah pertama setelah setup (semua anggota)**
+1. Buka Issue pertama Anda di tab *Issues*, lalu buat cabang `feat/<modul>-<deskripsi>`.
+2. Jalankan server dan buka halaman stub modul Anda lewat sidebar (ditandai *STUB · Anggota N*) untuk melihat kondisi awalnya.
+3. Baca struct terkait di `internal/model/` dan data di `db/seed.sql` untuk modul Anda.
+4. Kerjakan berurutan: repository → service → handler → template (lihat contoh di [bagian 9](#9-contoh-mengerjakan-satu-fitur-dari-awal)).
+5. Uji manual dengan data seed, jalankan `gofmt -l .`, `go vet ./...`, `go test ./...`, lalu buka PR.
+## 7. Alur kerja Git harian
 
 ```bash
 git checkout main
@@ -209,7 +200,7 @@ Jika `git rebase` memunculkan konflik: buka file yang ditandai, pilih/gabungkan 
 
 Aturan lengkap ada di [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
-## 9. Panduan menulis kode
+## 8. Panduan menulis kode
 
 **Alur request**
 ```
@@ -241,7 +232,7 @@ Browser → routes.go → Handler → Service → Repository → MySQL
 - Fungsi bantu di template: `{{rupiah .Nominal}}` dan `{{tanggal .Tanggal}}`.
 - Akses error: `h.d.Render.Error(w, r, http.StatusNotFound, "Data tidak ditemukan")`.
 
-## 10. Contoh: mengerjakan satu fitur dari awal
+## 9. Contoh: mengerjakan satu fitur dari awal
 
 Misal Anggota 2 mengerjakan **daftar kasbon (admin)**.
 
@@ -270,7 +261,7 @@ Misal Anggota 2 mengerjakan **daftar kasbon (admin)**.
 6. **Uji manual** dengan data seed (login admin), lalu `go test ./...`, `gofmt -l .`, `go vet ./...`.
 7. **Commit, push, buka PR**, minta review.
 
-## 11. Mengubah database / file bersama
+## 10. Mengubah database / file bersama
 
 File bersama (jangan diubah sembarangan): `cmd/web/main.go`, `internal/handler/routes.go`, `internal/handler/render.go`, `internal/config/`, `internal/middleware/`, `internal/model/`, `internal/service/errors.go`, `internal/service/password.go`, `db/schema.sql`, `templates/layout|header|footer|sidebar.html`, `static/`.
 
@@ -284,7 +275,7 @@ Jika Anda **perlu** mengubahnya:
    mysql -u root -p < db/seed.sql
    ```
 
-## 12. Data seed & akun uji
+## 11. Data seed & akun uji
 
 Semua akun memakai password **`password123`** (khusus development):
 
@@ -302,7 +293,7 @@ Skenario uji penggajian:
 
 Tabel skenario lengkap (terlambat > 15 menit, lembur 1,5 jam, presensi ditolak, kasbon aktif/sebagian/lunas, dst.) ada di [`docs/PEMBAGIAN_TUGAS.md`](docs/PEMBAGIAN_TUGAS.md). Untuk mereset data ke kondisi awal, jalankan ulang `schema.sql` lalu `seed.sql`.
 
-## 13. Testing & CI
+## 12. Testing & CI
 
 ```bash
 gofmt -l .          # harus tidak mengeluarkan apa pun (format -> gofmt -w .)
@@ -314,7 +305,7 @@ go test ./...
 - Tambahkan unit test untuk logika bisnis di file `_test.go` di sebelah kode (mis. `service/penggajian_test.go`, table-driven).
 - **GitHub Actions** (`.github/workflows/ci.yml`) menjalankan gofmt, vet, build, dan test pada setiap push/PR ke `main`. PR tidak boleh di-merge bila CI merah.
 
-## 14. Troubleshooting
+## 13. Troubleshooting
 
 | Masalah | Penyebab / solusi |
 |---|---|
@@ -322,7 +313,7 @@ go test ./...
 | `Access denied for user 'root'` | `DB_USER`/`DB_PASS` di `.env` tidak cocok dengan MySQL Anda. |
 | `Unknown database 'penggajian_mitrajaya'` | `schema.sql` belum diimpor (langkah 3). |
 | `go: command not found` / `mysql: command not found` | Belum terpasang atau belum masuk PATH; buka ulang terminal setelah instalasi. |
-| `missing go.sum entry` | Jalankan `go mod download` (atau `go mod tidy` bila Anda ketua dan `go.sum` belum di-commit). |
+| `missing go.sum entry` | Jalankan `go mod download`. Jika masih muncul, `git pull` dulu; bila `go.sum` memang belum ada di repo, minta ketua men-commit-nya. |
 | `template tidak ditemukan: ...` atau halaman error 500 saat render | Nama template salah (harus path relatif dari `templates/`, mis. `kasbon/list.html`), atau file tidak punya `{{define "content"}}`. |
 | Redirect terus ke `/login` | `DEV_AUTO_LOGIN_ROLE` kosong dan modul Auth belum selesai; isi `admin`/`pekerja` di `.env` lalu restart. |
 | `403 Akses ditolak` | Role tidak sesuai halaman (mis. membuka `/admin/...` sebagai pekerja). Ganti `DEV_AUTO_LOGIN_ROLE`. |
