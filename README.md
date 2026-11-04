@@ -177,28 +177,83 @@ Detail checklist per anggota, matriks tabel (siapa menulis/membaca), dan skenari
 5. Uji manual dengan data seed, jalankan `gofmt -l .`, `go vet ./...`, `go test ./...`, lalu buka PR.
 ## 7. Alur kerja Git harian
 
+Semua pekerjaan fitur dilakukan melalui branch masing-masing dan diintegrasikan ke `develop` menggunakan Pull Request. Branch `main` hanya digunakan untuk versi stabil.
+
+### Langkah 1 — Ambil versi terbaru develop
+
 ```bash
-git checkout main
-git pull                                   # selalu mulai dari main terbaru
-git checkout -b feat/kasbon-form           # buat cabang kerja
+git checkout develop
+git pull origin develop
+```
 
-# ... kerjakan, uji, lalu commit kecil-kecil ...
+### Langkah 2 — Buat branch pekerjaan
+
+```bash
+git checkout -b feat/kasbon-form
+```
+
+Gunakan penamaan branch sesuai jenis pekerjaan:
+
+- `feat/<modul>-<deskripsi>` — fitur baru.
+- `fix/<modul>-<deskripsi>` — perbaikan bug.
+- `docs/<deskripsi>` — dokumentasi.
+
+### Langkah 3 — Kerjakan dan commit
+
+```bash
 git add internal/handler/kasbon.go templates/kasbon/form.html
-git commit -m "feat(kasbon): form pencatatan kasbon"
+git commit -m "feat(kasbon): tambah form pengajuan kasbon"
+```
 
+Lakukan commit secara bertahap sesuai perubahan yang dikerjakan.
+
+### Langkah 4 — Sinkronisasi dengan develop
+
+Sebelum push, ambil perubahan terbaru dari repository:
+
+```bash
 git fetch origin
-git rebase origin/main                     # sinkronkan sebelum push
+git rebase origin/develop
+```
+
+Jika terjadi konflik, selesaikan terlebih dahulu sebelum melanjutkan.
+
+### Langkah 5 — Push branch pekerjaan
+
+```bash
 git push -u origin feat/kasbon-form
 ```
-Lalu buka **Pull Request** di GitHub ke `main`, isi template PR, minta review ke anggota lain. Setelah di-merge: `git checkout main && git pull` dan hapus cabang lama.
 
-**Penamaan cabang:** `feat/<modul>-<deskripsi>`, `fix/<modul>-<deskripsi>`.
-**Pesan commit:** `<tipe>(<modul>): <ringkas>` — tipe `feat`, `fix`, `refactor`, `test`, `docs`.
-**Ukuran PR:** kecil (± < 400 baris) agar cepat direview.
+### Langkah 6 — Buat Pull Request
 
-Jika `git rebase` memunculkan konflik: buka file yang ditandai, pilih/gabungkan isi, lalu `git add <file>` dan `git rebase --continue`. Jika bingung, `git rebase --abort` dan tanyakan ke tim. Konflik seharusnya jarang karena tiap orang mengedit file berbeda; bila sering terjadi, berarti ada yang mengedit file milik orang lain.
+Buka GitHub dan buat Pull Request dengan ketentuan:
 
-Aturan lengkap ada di [`CONTRIBUTING.md`](CONTRIBUTING.md).
+- **Base:** `develop`
+- **Compare:** branch pekerjaan masing-masing.
+- Pastikan CI berhasil.
+- Isi deskripsi perubahan dan cara pengujian.
+- Minta anggota lain melakukan review.
+- Merge setelah mendapatkan persetujuan.
+
+### Alur rilis ke main
+
+Setelah seluruh fitur selesai diintegrasikan dan diuji pada `develop`:
+
+1. Pastikan aplikasi berjalan dengan baik.
+2. Pastikan CI berhasil.
+3. Buat Pull Request dari `develop` menuju `main`.
+4. Lakukan review.
+5. Merge setelah disetujui.
+
+### Aturan penting
+
+- Jangan mengembangkan fitur langsung di `main`.
+- Jangan mengembangkan fitur langsung di `develop`.
+- Semua perubahan fitur harus melalui Pull Request.
+- Jangan melakukan force push ke `main` atau `develop`.
+- Setelah PR selesai di-merge, sinkronkan kembali branch lokal dengan `develop`.
+
+Panduan lengkap kolaborasi Git dapat dilihat pada [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ## 8. Panduan menulis kode
 
