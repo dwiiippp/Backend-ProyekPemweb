@@ -55,8 +55,8 @@ git config --global user.email "email-github-anda@contoh.com"
 
 **Langkah 1 — Clone repo**
 ```bash
-git clone https://github.com/<username-ketua>/go-penggajian.git
-cd go-penggajian
+git clone https://github.com/dwiiippp/Backend-ProyekPemweb.git
+cd Backend-ProyekPemweb
 ```
 
 **Langkah 2 — Buat file `.env`**
@@ -128,7 +128,7 @@ Centang semuanya sebelum mengambil Issue pertama. Jika ada yang gagal, lihat [Tr
 ## 5. Struktur proyek
 
 ```
-go-penggajian/
+Backend-ProyekPemweb/
 ├── cmd/web/main.go             # entry point  [bersama/frozen]
 ├── db/
 │   ├── schema.sql              # skema MySQL  [bersama/frozen]
@@ -322,5 +322,3 @@ go test ./...
 | CI gagal di langkah gofmt | Jalankan `gofmt -w .` lalu commit ulang. |
 | Tidak bisa push ke `main` | Memang diproteksi; push ke cabang `feat/...` dan buka PR. |
 | `.env` ikut ter-commit | Hapus dari Git: `git rm --cached .env`, commit, dan ganti password yang terlanjur terekspos. |
-
-Masih macet? Salin pesan error lengkap ke grup tim beserta langkah yang sudah dicoba.
