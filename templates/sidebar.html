@@ -1,0 +1,32 @@
+{{define "sidebar"}}
+<aside class="sidebar">
+  <nav>
+    <a href="/" class="{{if eq .Menu "home"}}active{{end}}">Dashboard</a>
+    {{if .User.IsAdmin}}
+    <span class="group">Data Master</span>
+    <a href="/admin/pekerja" class="{{if eq .Menu "pekerja"}}active{{end}}">Pekerja &amp; Upah</a>
+    <a href="/admin/shift" class="{{if eq .Menu "shift"}}active{{end}}">Shift</a>
+    <a href="/admin/jadwal" class="{{if eq .Menu "jadwal"}}active{{end}}">Jadwal Kerja</a>
+    <span class="group">Presensi &amp; Kasbon</span>
+    <a href="/admin/validasi" class="{{if eq .Menu "validasi"}}active{{end}}">Validasi Presensi</a>
+    <a href="/admin/kasbon" class="{{if eq .Menu "kasbon"}}active{{end}}">Kasbon</a>
+    <span class="group">Penggajian</span>
+    <a href="/admin/periode" class="{{if eq .Menu "periode"}}active{{end}}">Periode Gaji</a>
+    <a href="/admin/penggajian" class="{{if eq .Menu "penggajian"}}active{{end}}">Proses Penggajian</a>
+    <a href="/admin/koreksi" class="{{if eq .Menu "koreksi"}}active{{end}}">Koreksi Gaji</a>
+    <a href="/admin/slip" class="{{if eq .Menu "slip"}}active{{end}}">Slip Gaji</a>
+    <span class="group">Laporan</span>
+    <a href="/admin/laporan/presensi" class="{{if eq .Menu "laporan-presensi"}}active{{end}}">Presensi</a>
+    <a href="/admin/laporan/kasbon" class="{{if eq .Menu "laporan-kasbon"}}active{{end}}">Rekap Kasbon</a>
+    <a href="/admin/laporan/periode" class="{{if eq .Menu "laporan-periode"}}active{{end}}">Status Periode</a>
+    <a href="/admin/laporan/rekap-gaji" class="{{if eq .Menu "laporan-gaji"}}active{{end}}">Rekap Gaji &amp; Lembur</a>
+    {{else}}
+    <a href="/profil" class="{{if eq .Menu "profil"}}active{{end}}">Profil Saya</a>
+    <a href="/pekerja/jadwal" class="{{if eq .Menu "jadwal"}}active{{end}}">Jadwal Saya</a>
+    <a href="/pekerja/absensi" class="{{if eq .Menu "absensi"}}active{{end}}">Presensi</a>
+    <a href="/pekerja/kasbon" class="{{if eq .Menu "kasbon"}}active{{end}}">Kasbon Saya</a>
+    <a href="/pekerja/slip" class="{{if eq .Menu "slip"}}active{{end}}">Slip Gaji</a>
+    {{end}}
+  </nav>
+</aside>
+{{end}}

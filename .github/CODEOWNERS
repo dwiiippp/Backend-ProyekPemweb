@@ -1,0 +1,90 @@
+# Ganti @anggotaN dengan username GitHub masing-masing, @ketua-tim dengan username ketua.
+# File bersama (frozen) wajib direview ketua.
+*  @ketua-tim
+
+# Anggota 1
+/internal/handler/auth.go @anggota1
+/internal/service/auth.go @anggota1
+/internal/repository/auth.go @anggota1
+/internal/handler/home.go @anggota1
+/internal/service/home.go @anggota1
+/internal/repository/home.go @anggota1
+/internal/handler/pekerja.go @anggota1
+/internal/service/pekerja.go @anggota1
+/internal/repository/pekerja.go @anggota1
+/templates/pekerja/list.html @anggota1
+/templates/pekerja/form.html @anggota1
+/templates/pekerja/detail.html @anggota1
+/internal/handler/upah.go @anggota1
+/internal/service/upah.go @anggota1
+/internal/repository/upah.go @anggota1
+/templates/upah/list.html @anggota1
+/templates/upah/form.html @anggota1
+/internal/handler/shift.go @anggota1
+/internal/service/shift.go @anggota1
+/internal/repository/shift.go @anggota1
+/templates/shift/list.html @anggota1
+/templates/shift/form.html @anggota1
+/internal/handler/jadwal.go @anggota1
+/internal/service/jadwal.go @anggota1
+/internal/repository/jadwal.go @anggota1
+/templates/jadwal/kalender.html @anggota1
+/templates/jadwal/form.html @anggota1
+/templates/jadwal/saya.html @anggota1
+
+# Anggota 2
+/internal/handler/absensi.go @anggota2
+/internal/service/absensi.go @anggota2
+/internal/repository/absensi.go @anggota2
+/templates/absensi/form.html @anggota2
+/templates/absensi/riwayat.html @anggota2
+/internal/handler/validasi.go @anggota2
+/internal/service/validasi.go @anggota2
+/internal/repository/validasi.go @anggota2
+/templates/validasi/list.html @anggota2
+/templates/validasi/detail.html @anggota2
+/internal/handler/kasbon.go @anggota2
+/internal/service/kasbon.go @anggota2
+/internal/repository/kasbon.go @anggota2
+/templates/kasbon/list.html @anggota2
+/templates/kasbon/form.html @anggota2
+/templates/kasbon/saya.html @anggota2
+/internal/handler/laporan_presensi_kasbon.go @anggota2
+/internal/service/laporan_presensi_kasbon.go @anggota2
+/internal/repository/laporan_presensi_kasbon.go @anggota2
+/templates/laporan/presensi.html @anggota2
+/templates/laporan/kasbon.html @anggota2
+
+# Anggota 3
+/internal/handler/periode.go @anggota3
+/internal/service/periode.go @anggota3
+/internal/repository/periode.go @anggota3
+/templates/periode/list.html @anggota3
+/templates/periode/form.html @anggota3
+/templates/periode/detail.html @anggota3
+/internal/handler/penggajian.go @anggota3
+/internal/service/penggajian.go @anggota3
+/internal/repository/penggajian.go @anggota3
+/templates/penggajian/index.html @anggota3
+/templates/penggajian/pratinjau.html @anggota3
+/templates/penggajian/hasil.html @anggota3
+/internal/handler/koreksi.go @anggota3
+/internal/service/koreksi.go @anggota3
+/internal/repository/koreksi.go @anggota3
+/templates/koreksi/list.html @anggota3
+/templates/koreksi/form.html @anggota3
+/internal/handler/slip.go @anggota3
+/internal/service/slip.go @anggota3
+/internal/repository/slip.go @anggota3
+/templates/slip/list.html @anggota3
+/templates/slip/detail.html @anggota3
+/templates/slip/saya.html @anggota3
+/internal/handler/laporan_gaji.go @anggota3
+/internal/service/laporan_gaji.go @anggota3
+/internal/repository/laporan_gaji.go @anggota3
+/templates/laporan/periode.html @anggota3
+/templates/laporan/rekap_gaji.html @anggota3
+
+/templates/login.html @anggota1
+/templates/home.html @anggota1
+/templates/profil.html @anggota1

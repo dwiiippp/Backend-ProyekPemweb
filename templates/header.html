@@ -1,0 +1,11 @@
+{{define "header"}}
+<header class="topbar">
+  <a class="brand" href="/">Penggajian Mitra Jaya</a>
+  {{if .User}}
+  <div class="who">
+    <span>{{.User.Nama}} ({{.User.Role}})</span>
+    <form method="post" action="/logout"><button type="submit" class="btn small">Keluar</button></form>
+  </div>
+  {{end}}
+</header>
+{{end}}
