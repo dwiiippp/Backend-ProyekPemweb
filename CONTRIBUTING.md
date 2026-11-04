@@ -17,7 +17,7 @@ Repository ini hanya menggunakan dua branch:
 
 ## 2. Alur Kerja Harian
 
-### 1. Mengambil versi terbaru
+### 2.1 Mengambil versi terbaru
 
 Sebelum mulai bekerja, pastikan berada di branch `develop`:
 
@@ -28,7 +28,7 @@ git pull origin develop
 
 Tujuannya agar pekerjaan dimulai dari kode terbaru yang sudah diintegrasikan anggota tim lainnya.
 
-### 2. Mengerjakan modul
+### 2.2 Mengerjakan modul
 
 Setiap anggota mengerjakan modul sesuai pembagian tugas masing-masing.
 
@@ -45,7 +45,7 @@ Aturan pengerjaan:
 - Beri tahu anggota tim jika membutuhkan perubahan pada file bersama.
 - Jangan mengubah implementasi modul anggota lain tanpa persetujuan.
 
-### 3. Melakukan commit
+### 2.3 Melakukan commit
 
 Setelah menyelesaikan perubahan, lakukan commit:
 
@@ -78,7 +78,7 @@ git commit -m "fix(kasbon): perbaiki validasi nominal"
 git commit -m "docs(readme): perbarui panduan setup"
 ```
 
-### 4. Sinkronisasi sebelum push
+### 2.4 Sinkronisasi sebelum push
 
 Sebelum melakukan push, ambil perubahan terbaru dari `develop`:
 
@@ -159,6 +159,7 @@ Hindari mengubah file modul milik anggota lain tanpa koordinasi.
 File berikut merupakan fondasi bersama dan tidak boleh diubah sembarangan:
 
 - `cmd/web/main.go`
+- `cmd/seed-users/main.go`
 - `internal/handler/routes.go`
 - `internal/handler/render.go`
 - `internal/config/`
@@ -197,14 +198,39 @@ git checkout develop
 git pull origin develop
 ```
 
-Jika schema berubah, anggota perlu mengimpor ulang database:
+Jika schema berubah dan database perlu dibuat ulang, gunakan urutan berikut:
 
 ```bash
+# 1. Membuat ulang database dan tabel
 mysql -u root -p < db/schema.sql
+
+# 2. Membuat akun pengguna development
+go run ./cmd/seed-users
+
+# 3. Mengimpor data contoh
 mysql -u root -p < db/seed.sql
 ```
 
-> **Perhatian:** Menjalankan `schema.sql` akan menghapus dan membuat ulang tabel. Cadangkan data lokal yang masih dibutuhkan sebelum menjalankannya.
+Sebelum menjalankan Go seeder, pastikan konfigurasi `.env` sudah benar:
+
+```env
+APP_ENV=development
+SEED_USERS_ENABLED=true
+
+SEED_ADMIN_PASSWORD=
+SEED_BUDI_PASSWORD=
+SEED_SITI_PASSWORD=
+SEED_ANDI_PASSWORD=
+SEED_DEWI_PASSWORD=
+```
+
+Semua password wajib diisi dan minimal 8 karakter. Setelah seeder berhasil dijalankan, ubah kembali:
+
+```env
+SEED_USERS_ENABLED=false
+```
+
+> **Perhatian:** Menjalankan `schema.sql` akan menghapus dan membuat ulang tabel. Cadangkan data lokal yang masih dibutuhkan sebelum menjalankannya. Urutan impor harus tetap `schema.sql` → Go seeder → `seed.sql`.
 
 ### 4.4 Aturan tambahan
 
