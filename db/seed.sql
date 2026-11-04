@@ -1,13 +1,9 @@
--- Data contoh untuk development. Semua password = password123 (JANGAN dipakai di produksi).
+-- Data dummy untuk development.
+-- Akun pengguna dibuat melalui Go seeder: go run ./cmd/seed-users
+
 USE penggajian_mitrajaya;
 
-INSERT INTO users (id,username,password_hash,role,status) VALUES
-(1,'admin','$2b$10$SBlWwWdsATen3g9kzQY60uDaRtji34G/czXyoq.h/vEfZVhqGOXam','admin','aktif'),
-(2,'budi','$2b$10$SBlWwWdsATen3g9kzQY60uDaRtji34G/czXyoq.h/vEfZVhqGOXam','pekerja','aktif'),
-(3,'siti','$2b$10$SBlWwWdsATen3g9kzQY60uDaRtji34G/czXyoq.h/vEfZVhqGOXam','pekerja','aktif'),
-(4,'andi','$2b$10$SBlWwWdsATen3g9kzQY60uDaRtji34G/czXyoq.h/vEfZVhqGOXam','pekerja','aktif'),
-(5,'dewi','$2b$10$SBlWwWdsATen3g9kzQY60uDaRtji34G/czXyoq.h/vEfZVhqGOXam','pekerja','aktif');
-
+-- Data pekerja
 INSERT INTO pekerja (id,user_id,nik,nama,kategori_kerja,tanggal_masuk,tanggal_keluar,status) VALUES
 (1,2,'3374010001','Budi Santoso','harian','2025-01-10',NULL,'aktif'),
 (2,3,'3374010002','Siti Aminah','harian','2025-03-01',NULL,'aktif'),
