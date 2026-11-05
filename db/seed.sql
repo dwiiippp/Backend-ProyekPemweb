@@ -4,11 +4,11 @@
 USE penggajian_mitrajaya;
 
 -- Data pekerja
-INSERT INTO pekerja (id,user_id,nik,nama,kategori_kerja,tanggal_masuk,tanggal_keluar,status) VALUES
-(1,2,'3374010001','Budi Santoso','harian','2025-01-10',NULL,'aktif'),
-(2,3,'3374010002','Siti Aminah','harian','2025-03-01',NULL,'aktif'),
-(3,4,'3374010003','Andi Wijaya','harian','2025-06-15',NULL,'aktif'),
-(4,5,'3374010004','Dewi Lestari','bulanan','2026-10-15',NULL,'aktif');
+INSERT INTO pekerja (id,user_id,nik,kategori_kerja,tanggal_masuk,tanggal_keluar,status) VALUES
+(1,2,'3374010001','harian','2025-01-10',NULL,'aktif'),
+(2,3,'3374010002','harian','2025-03-01',NULL,'aktif'),
+(3,4,'3374010003','harian','2025-06-15',NULL,'aktif'),
+(4,5,'3374010004','bulanan','2026-10-15',NULL,'aktif');
 
 INSERT INTO riwayat_gaji (pekerja_id,nominal_gaji,tanggal_berlaku) VALUES
 (1,100000,'2025-01-10'),

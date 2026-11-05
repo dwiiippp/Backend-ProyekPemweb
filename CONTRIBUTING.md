@@ -10,6 +10,7 @@ Repository ini hanya menggunakan dua branch:
 - `develop` — branch pengembangan bersama yang digunakan seluruh anggota untuk mengerjakan dan mengintegrasikan fitur.
 
 **Aturan utama:**
+
 - Hanya gunakan branch `main` dan `develop`.
 - Seluruh pekerjaan fitur, perbaikan bug, dan dokumentasi dilakukan langsung di `develop`.
 - Tidak perlu membuat branch tambahan untuk setiap pekerjaan.
@@ -113,12 +114,31 @@ git rebase --abort
 ```
 
 **Penting:**
+
 - Jangan melakukan force push.
 - Jangan menghapus commit anggota lain.
 - Jika push ditolak karena ada perubahan terbaru, lakukan sinkronisasi kembali sebelum push.
 - Pastikan perubahan lokal sudah disimpan melalui commit sebelum melakukan rebase.
 
-## 3. Alur Rilis ke Main
+## 3. Konvensi Database dan ERD
+
+Seluruh anggota wajib mengikuti struktur database pada `db/schema.sql` dan ERD terbaru.
+
+Aturan database:
+
+- Seluruh primary key dan foreign key menggunakan tipe `INT`.
+- Jangan menambahkan atau mengubah struktur tabel tanpa koordinasi.
+- Tabel `users` menyimpan identitas pengguna, yaitu nama, email, password hash, role, dan status.
+- Tabel `pekerja` terhubung ke `users` melalui `pekerja.user_id` yang mereferensikan `users.id`.
+- Nama pekerja diambil dari `users.nama`, bukan dari tabel `pekerja`.
+- Login menggunakan email dan password.
+- Password wajib disimpan dalam bentuk hash menggunakan bcrypt.
+- Data sesi login disimpan pada tabel `sessions`.
+- Autentikasi harus memperhatikan status pengguna dan `deleted_at`.
+- Tabel yang menggunakan soft delete tidak boleh dihapus secara permanen tanpa koordinasi.
+- Data yang sudah dihapus secara soft delete tidak boleh ditampilkan sebagai data aktif.
+
+## 4. Alur Rilis ke Main
 
 Pull Request hanya digunakan ketika akan merilis perubahan dari `develop` ke `main`.
 
@@ -140,21 +160,22 @@ Tahapan rilis:
 - Pastikan `develop` dalam kondisi stabil sebelum dirilis.
 - Setelah rilis, anggota tetap melanjutkan pengembangan di `develop`.
 
-## 4. Aturan Agar Tidak Bentrok
+## 5. Aturan Agar Tidak Bentrok
 
 Karena seluruh anggota bekerja pada branch `develop` yang sama, koordinasi menjadi hal penting.
 
-### 4.1 Pembagian file
+### 5.1 Pembagian file
 
 Setiap anggota bertanggung jawab terhadap file sesuai modul yang telah dibagikan.
 
 Lihat:
+
 - `docs/PEMBAGIAN_TUGAS.md`
 - `.github/CODEOWNERS`
 
 Hindari mengubah file modul milik anggota lain tanpa koordinasi.
 
-### 4.2 File bersama (frozen)
+### 5.2 File bersama (frozen)
 
 File berikut merupakan fondasi bersama dan tidak boleh diubah sembarangan:
 
@@ -182,14 +203,16 @@ Jika perlu mengubah file bersama:
 4. Setelah perubahan selesai, lakukan commit dan push ke `develop`.
 5. Informasikan kepada anggota lain agar melakukan sinkronisasi.
 
-### 4.3 Perubahan database
+### 5.3 Perubahan database
 
 Jika terdapat perubahan struktur database:
 
 - Koordinasikan perubahan `db/schema.sql`.
 - Sesuaikan `internal/model/` jika struktur tabel berubah.
+- Sesuaikan repository yang melakukan query terhadap tabel atau kolom yang berubah.
 - Sesuaikan `db/seed.sql` jika data contoh perlu diperbarui.
-- Pastikan ketiga bagian tersebut konsisten.
+- Sesuaikan Go seeder jika struktur atau kebutuhan akun pengguna berubah.
+- Pastikan seluruh implementasi konsisten dengan ERD terbaru.
 
 Setelah perubahan masuk ke `develop`, seluruh anggota harus mengambil perubahan terbaru:
 
@@ -208,7 +231,7 @@ mysql -u root -p < db/schema.sql
 go run ./cmd/seed-users
 
 # 3. Mengimpor data contoh
-mysql -u root -p < db/seed.sql
+mysql -u root -p penggajian_mitrajaya < db/seed.sql
 ```
 
 Sebelum menjalankan Go seeder, pastikan konfigurasi `.env` sudah benar:
@@ -232,7 +255,7 @@ SEED_USERS_ENABLED=false
 
 > **Perhatian:** Menjalankan `schema.sql` akan menghapus dan membuat ulang tabel. Cadangkan data lokal yang masih dibutuhkan sebelum menjalankannya. Urutan impor harus tetap `schema.sql` → Go seeder → `seed.sql`.
 
-### 4.4 Aturan tambahan
+### 5.4 Aturan tambahan
 
 1. Route baru hanya boleh berada di bawah prefix modul masing-masing (`/admin/<modul>` atau `/pekerja/<modul>`).
 2. Jangan melakukan commit terhadap `.env` atau kredensial.
@@ -240,7 +263,7 @@ SEED_USERS_ENABLED=false
 4. Selalu sinkronkan branch sebelum mulai bekerja dan sebelum push.
 5. Jangan melakukan force push ke `main` maupun `develop`.
 
-## 5. Standar Commit dan Review
+## 6. Standar Commit dan Review
 
 Gunakan pesan commit yang jelas dan konsisten.
 
@@ -263,8 +286,12 @@ Saat melakukan review rilis dari `develop` ke `main`, perhatikan:
 - Penggunaan `decimal.Decimal` untuk perhitungan uang, bukan `float`.
 - Tidak adanya file `.env` atau kredensial di repository.
 - Tidak adanya perubahan yang merusak modul anggota lain.
+- Query repository sesuai dengan struktur `db/schema.sql`.
+- Relasi pengguna dan pekerja menggunakan `pekerja.user_id`.
+- Proses autentikasi menggunakan tabel `users` dan `sessions`.
+- Pemeriksaan status pengguna dan soft delete diterapkan dengan benar.
 
-## 6. Checklist Sebelum Rilis
+## 7. Checklist Sebelum Rilis
 
 Pastikan seluruh pemeriksaan berikut berhasil sebelum membuat atau menyetujui Pull Request `develop` ke `main`.
 
@@ -298,4 +325,4 @@ Pastikan seluruh pemeriksaan berikut berhasil sebelum membuat atau menyetujui Pu
            Integrasi
 ```
 
-Seluruh anggota bekerja langsung pada `develop`. Branch `main` hanya digunakan untuk menyimpan versi stabil aplikasi.
+Seluruh anggota bekerja langsung di `develop`. Branch `main` hanya digunakan untuk menyimpan versi stabil aplikasi.
