@@ -13,7 +13,8 @@ import (
 )
 
 type SeedUser struct {
-	Username string
+	Nama     string
+	Email    string
 	Role     string
 	Password string
 }
@@ -37,21 +38,21 @@ func run() error {
 	}
 
 	users := []SeedUser{
-		{"admin", "admin", os.Getenv("SEED_ADMIN_PASSWORD")},
-		{"budi", "pekerja", os.Getenv("SEED_BUDI_PASSWORD")},
-		{"siti", "pekerja", os.Getenv("SEED_SITI_PASSWORD")},
-		{"andi", "pekerja", os.Getenv("SEED_ANDI_PASSWORD")},
-		{"dewi", "pekerja", os.Getenv("SEED_DEWI_PASSWORD")},
+		{"Admin Mitra Jaya", "admin@mitrajaya.test", "admin", os.Getenv("SEED_ADMIN_PASSWORD")},
+		{"Budi", "budi@mitrajaya.test", "pekerja", os.Getenv("SEED_BUDI_PASSWORD")},
+		{"Siti", "siti@mitrajaya.test", "pekerja", os.Getenv("SEED_SITI_PASSWORD")},
+		{"Andi", "andi@mitrajaya.test", "pekerja", os.Getenv("SEED_ANDI_PASSWORD")},
+		{"Dewi", "dewi@mitrajaya.test", "pekerja", os.Getenv("SEED_DEWI_PASSWORD")},
 	}
 
 	// Validasi password sebelum diproses.
 	for _, user := range users {
 		if strings.TrimSpace(user.Password) == "" {
-			return fmt.Errorf("password untuk akun %s belum diisi", user.Username)
+			return fmt.Errorf("password untuk akun %s belum diisi", user.Email)
 		}
 
 		if len(user.Password) < 8 {
-			return fmt.Errorf("password akun %s minimal 8 karakter", user.Username)
+			return fmt.Errorf("password akun %s minimal 8 karakter", user.Email)
 		}
 	}
 
@@ -59,7 +60,7 @@ func run() error {
 	for i := range users {
 		hash, err := service.HashPassword(users[i].Password)
 		if err != nil {
-			return fmt.Errorf("gagal melakukan hashing untuk %s: %w", users[i].Username, err)
+			return fmt.Errorf("gagal melakukan hashing untuk %s: %w", users[i].Email, err)
 		}
 
 		users[i].Password = hash
@@ -83,9 +84,10 @@ func run() error {
 	defer tx.Rollback()
 
 	query := `
-		INSERT INTO users (username, password_hash, role, status)
-		VALUES (?, ?, ?, 'aktif')
+		INSERT INTO users (nama, email, password_hash, role, status)
+		VALUES (?, ?, ?, ?, 'aktif')
 		ON DUPLICATE KEY UPDATE
+			nama = VALUES(nama),
 			password_hash = VALUES(password_hash),
 			role = VALUES(role),
 			status = 'aktif'
@@ -95,12 +97,13 @@ func run() error {
 		_, err := tx.ExecContext(
 			ctx,
 			query,
-			user.Username,
+			user.Nama,
+			user.Email,
 			user.Password,
 			user.Role,
 		)
 		if err != nil {
-			return fmt.Errorf("gagal menyimpan akun %s: %w", user.Username, err)
+			return fmt.Errorf("gagal menyimpan akun %s: %w", user.Email, err)
 		}
 	}
 
