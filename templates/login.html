@@ -1,10 +1,19 @@
 {{define "content"}}
 <div class="card login">
   <h2>Masuk</h2>
-  <p><span class="badge">STUB · Anggota 1</span> <code>templates/login.html</code> — UC-01</p>
+  <p>Silakan masuk menggunakan email dan password akun Anda.</p>
+
   <form method="post" action="/login">
-    <label>Username <input name="username" required autofocus></label>
-    <label>Password <input name="password" type="password" required></label>
+    <label>
+      Email
+      <input name="email" type="email" required autofocus>
+    </label>
+
+    <label>
+      Password
+      <input name="password" type="password" required>
+    </label>
+
     <button class="btn" type="submit">Masuk</button>
   </form>
 </div>

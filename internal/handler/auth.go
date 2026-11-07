@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"errors"
+	"log"
 	"net/http"
 
 	"penggajian/internal/middleware"
@@ -23,7 +25,6 @@ func (h *AuthHandler) Register(mux *http.ServeMux, g Guards) {
 	mux.HandleFunc("GET /login", h.LoginForm)
 	mux.HandleFunc("POST /login", h.DoLogin)
 	mux.Handle("POST /logout", g.Login(http.HandlerFunc(h.Logout)))
-	// TODO(Anggota 1): tambah route lain di sini. Validasi username+password (service.CheckPassword), tolak akun nonaktif, buat session via d.Sessions.Create, redirect sesuai role.
 }
 
 func (h *AuthHandler) LoginForm(w http.ResponseWriter, r *http.Request) {
@@ -35,11 +36,39 @@ func (h *AuthHandler) LoginForm(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AuthHandler) DoLogin(w http.ResponseWriter, r *http.Request) {
-	// TODO(Anggota 1): implementasikan.
-	http.Error(w, "belum diimplementasi (Anggota 1)", http.StatusNotImplemented)
+	if err := r.ParseForm(); err != nil {
+		h.d.Render.Error(w, r, http.StatusBadRequest, "Form tidak valid")
+		return
+	}
+
+	u, err := h.svc.Login(r.Context(), r.FormValue("email"), r.FormValue("password"))
+	if err != nil {
+		msg := "Terjadi kesalahan, coba lagi"
+		switch {
+		case errors.Is(err, service.ErrInputTidakValid):
+			msg = "Email dan password wajib diisi"
+		case errors.Is(err, service.ErrKredensialSalah), errors.Is(err, service.ErrAkunNonaktif):
+			msg = "Email atau password salah"
+		default:
+			log.Printf("login: %v", err)
+		}
+		h.d.Render.Page(w, r, "login.html", PageData{Title: "Login", Error: msg})
+		return
+	}
+
+	if err := h.d.Sessions.Create(r.Context(), w, *u); err != nil {
+		log.Printf("login session: %v", err)
+		h.d.Render.Error(w, r, http.StatusInternalServerError, "Gagal membuat sesi")
+		return
+	}
+	http.Redirect(w, r, "/", http.StatusSeeOther) // home menampilkan dashboard sesuai role
 }
 
 func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
-	// TODO(Anggota 1): implementasikan.
-	http.Error(w, "belum diimplementasi (Anggota 1)", http.StatusNotImplemented)
+	if err := h.d.Sessions.Destroy(r.Context(), w, r); err != nil {
+		log.Printf("logout session: %v", err)
+		h.d.Render.Error(w, r, http.StatusInternalServerError, "Gagal menghapus sesi")
+		return
+	}
+	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }

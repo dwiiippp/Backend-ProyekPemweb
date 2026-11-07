@@ -36,7 +36,7 @@ func main() {
 	deps := handler.Deps{
 		DB:       db,
 		Render:   render,
-		Sessions: middleware.NewSessionManager(),
+		Sessions: middleware.NewSessionManager(db, cfg.CookieSecure),
 		Cfg:      cfg,
 	}
 
