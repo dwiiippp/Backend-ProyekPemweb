@@ -25,8 +25,6 @@ func (h *AuthHandler) Register(mux *http.ServeMux, g Guards) {
 	mux.HandleFunc("GET /login", h.LoginForm)
 	mux.HandleFunc("POST /login", h.DoLogin)
 	mux.Handle("POST /logout", g.Login(http.HandlerFunc(h.Logout)))
-	// TODO(Anggota 1): validasi email dan password,
-	// tolak akun nonaktif, buat session, redirect sesuai role.
 }
 
 func (h *AuthHandler) LoginForm(w http.ResponseWriter, r *http.Request) {
@@ -50,7 +48,7 @@ func (h *AuthHandler) DoLogin(w http.ResponseWriter, r *http.Request) {
 		case errors.Is(err, service.ErrInputTidakValid):
 			msg = "Email dan password wajib diisi"
 		case errors.Is(err, service.ErrKredensialSalah), errors.Is(err, service.ErrAkunNonaktif):
-			msg = err.Error()
+			msg = "Email atau password salah"
 		default:
 			log.Printf("login: %v", err)
 		}
@@ -58,7 +56,7 @@ func (h *AuthHandler) DoLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.d.Sessions.Create(w, *u); err != nil {
+	if err := h.d.Sessions.Create(r.Context(), w, *u); err != nil {
 		log.Printf("login session: %v", err)
 		h.d.Render.Error(w, r, http.StatusInternalServerError, "Gagal membuat sesi")
 		return
@@ -67,6 +65,10 @@ func (h *AuthHandler) DoLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
-	h.d.Sessions.Destroy(w, r)
+	if err := h.d.Sessions.Destroy(r.Context(), w, r); err != nil {
+		log.Printf("logout session: %v", err)
+		h.d.Render.Error(w, r, http.StatusInternalServerError, "Gagal menghapus sesi")
+		return
+	}
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }
