@@ -1,8 +1,59 @@
+
 {{define "content"}}
-<div class="card stub">
+<div class="card">
   <h2>{{.Title}}</h2>
-  <p><span class="badge">STUB · Anggota 1</span></p>
-  <p><code>templates/pekerja/detail.html</code> — F-02 · UC-08 Kelola Pekerja</p>
-  <p>TODO: Detail pekerja + ringkasan riwayat upah.</p>
+
+  {{with .Data}}
+  <table>
+    <tbody>
+      <tr>
+        <th>NIK</th>
+        <td>{{.NIK}}</td>
+      </tr>
+      <tr>
+        <th>Nama Lengkap</th>
+        <td>{{.Nama}}</td>
+      </tr>
+      <tr>
+        <th>Email</th>
+        <td>{{.Email}}</td>
+      </tr>
+      <tr>
+        <th>Kategori Kerja</th>
+        <td>{{.KategoriKerja}}</td>
+      </tr>
+      <tr>
+        <th>Tanggal Masuk</th>
+        <td>{{.TanggalMasuk.Format "02-01-2006"}}</td>
+      </tr>
+      <tr>
+        <th>Tanggal Keluar</th>
+        <td>
+          {{if .TanggalKeluar}}
+            {{.TanggalKeluar.Format "02-01-2006"}}
+          {{else}}
+            -
+          {{end}}
+        </td>
+      </tr>
+      <tr>
+        <th>Status</th>
+        <td>{{.Status}}</td>
+      </tr>
+    </tbody>
+  </table>
+  {{end}}
+
+  <div>
+    <a href="/admin/pekerja/{{.Data.ID}}/edit">Edit Pekerja</a>
+
+    {{if eq .Data.Status "aktif"}}
+    <form method="POST" action="/admin/pekerja/{{.Data.ID}}/nonaktifkan"
+    onsubmit="return confirm('Yakin ingin menonaktifkan pekerja ini?')"><button type="submit">Nonaktifkan Pekerja</button>
+  </form>
+  {{end}}
+
+  <a href="/admin/pekerja">Kembali ke Daftar Pekerja</a>
+</div>
 </div>
 {{end}}

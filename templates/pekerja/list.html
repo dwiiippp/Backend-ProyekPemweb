@@ -1,8 +1,44 @@
 {{define "content"}}
-<div class="card stub">
+<div class="card">
   <h2>{{.Title}}</h2>
-  <p><span class="badge">STUB · Anggota 1</span></p>
-  <p><code>templates/pekerja/list.html</code> — F-02 · UC-08 Kelola Pekerja</p>
-  <p>TODO: Tabel pekerja + tombol tambah/ubah/nonaktifkan.</p>
+
+  {{if .Flash}}
+    <p class="badge">{{.Flash}}</p>
+  {{end}}
+
+  {{if .Error}}
+    <p>{{.Error}}</p>
+  {{end}}
+
+  <table>
+    <thead>
+      <tr>
+        <th>NIK</th>
+        <th>Nama</th>
+        <th>Email</th>
+        <th>Kategori</th>
+        <th>Tanggal Masuk</th>
+        <th>Status</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .Data}}
+      <tr>
+        <td>{{.NIK}}</td>
+        <td>{{.Nama}}</td>
+        <td>{{.Email}}</td>
+        <td>{{.KategoriKerja}}</td>
+        <td>{{.TanggalMasuk.Format "02-01-2006"}}</td>
+        <td>{{.Status}}</td>
+        <td><a href="/admin/pekerja/{{.ID}}">Detail</a></td>
+      </tr>
+      {{else}}
+      <tr>
+        <td colspan="6">Belum ada data pekerja.</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
 </div>
 {{end}}
