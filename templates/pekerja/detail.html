@@ -46,6 +46,7 @@
 
   <div>
     <a href="/admin/pekerja/{{.Data.ID}}/edit">Edit Pekerja</a>
+    <a href="/admin/pekerja/{{.Data.ID}}/upah">Riwayat Upah</a>
 
     {{if eq .Data.Status "aktif"}}
     <form method="POST" action="/admin/pekerja/{{.Data.ID}}/nonaktifkan"

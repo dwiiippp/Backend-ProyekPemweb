@@ -1,8 +1,45 @@
+
 {{define "content"}}
-<div class="card stub">
+<div class="card">
   <h2>{{.Title}}</h2>
-  <p><span class="badge">STUB · Anggota 1</span></p>
-  <p><code>templates/upah/form.html</code> — F-03 Riwayat Upah (BR-04)</p>
-  <p>TODO: Form tambah upah baru + tanggal berlaku (upah lama TIDAK ditimpa).</p>
+
+  <form method="POST" action="/admin/pekerja/{{.Data.PekerjaID}}/upah">
+    <div class="form-group">
+      <label for="nominal_gaji">Nominal Gaji (Rp)</label>
+      <input
+        type="number"
+        id="nominal_gaji"
+        name="nominal_gaji"
+        min="0.01"
+        step="0.01"
+        placeholder="Contoh: 3500000"
+        required
+      >
+    </div>
+
+    <div class="form-group">
+      <label for="tanggal_berlaku">Tanggal Berlaku</label>
+      <input
+        type="date"
+        id="tanggal_berlaku"
+        name="tanggal_berlaku"
+        required
+      >
+    </div>
+
+    <div>
+      <button type="submit">Simpan Riwayat Upah</button>
+      <a href="/admin/pekerja/{{.Data.PekerjaID}}/upah">
+        Batal
+      </a>
+    </div>
+  </form>
+
+  <p>
+    <small>
+      Catatan: Menyimpan perubahan upah akan membuat riwayat baru.
+      Data upah sebelumnya tidak akan dihapus atau ditimpa.
+    </small>
+  </p>
 </div>
 {{end}}
