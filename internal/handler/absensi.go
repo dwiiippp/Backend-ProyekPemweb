@@ -1,14 +1,18 @@
 package handler
 
 import (
+	"errors"
+	"log"
 	"net/http"
+	"strconv"
+	"strings"
+	"time"
 
+	"penggajian/internal/middleware"
 	"penggajian/internal/repository"
 	"penggajian/internal/service"
 )
 
-// Pemilik: Anggota 2 | F-06 · UC-04 Input Presensi · UC-05 Riwayat (BR-13, BR-15)
-// Tabel: absensi (tulis); baca jadwal_kerja, shift, validasi_presensi_harian, periode_gaji
 type AbsensiHandler struct {
 	d   Deps
 	svc *service.AbsensiService
@@ -22,18 +26,67 @@ func (h *AbsensiHandler) Register(mux *http.ServeMux, g Guards) {
 	mux.Handle("GET /pekerja/absensi", g.Pekerja(http.HandlerFunc(h.Form)))
 	mux.Handle("POST /pekerja/absensi", g.Pekerja(http.HandlerFunc(h.Simpan)))
 	mux.Handle("GET /pekerja/absensi/riwayat", g.Pekerja(http.HandlerFunc(h.Riwayat)))
-	// TODO(Anggota 2): tambah route lain di sini. Tolak bila: hari sudah ditutup (ErrHariDitutup), periode ditutup, presensi ganda, jam keluar < jam keluar shift, atau jadwal bukan milik sendiri. Status awal 'menunggu'.
 }
 
 func (h *AbsensiHandler) Form(w http.ResponseWriter, r *http.Request) {
-	h.d.Render.Page(w, r, "absensi/form.html", PageData{Title: "Input Presensi", Menu: "absensi"})
+	user := middleware.UserFrom(r.Context())
+	items, err := h.svc.JadwalTerbuka(r.Context(), user.PekerjaID, time.Now())
+	if err != nil {
+		log.Printf("absensi jadwal: %v", err)
+		h.d.Render.Error(w, r, http.StatusInternalServerError, "Gagal memuat jadwal presensi")
+		return
+	}
+	flash := ""
+	if r.URL.Query().Get("sukses") == "1" {
+		flash = "Presensi berhasil dikirim dan menunggu validasi admin."
+	}
+	h.d.Render.Page(w, r, "absensi/form.html", PageData{
+		Title: "Input Presensi", Menu: "absensi", Flash: flash,
+		Data: struct {
+			Jadwal []repository.JadwalPresensi
+		}{Jadwal: items},
+	})
 }
 
 func (h *AbsensiHandler) Simpan(w http.ResponseWriter, r *http.Request) {
-	// TODO(Anggota 2): implementasikan.
-	http.Error(w, "belum diimplementasi (Anggota 2)", http.StatusNotImplemented)
+	if err := r.ParseForm(); err != nil {
+		h.d.Render.Error(w, r, http.StatusBadRequest, "Form presensi tidak valid")
+		return
+	}
+	jadwalID, err := strconv.ParseInt(strings.TrimSpace(r.FormValue("jadwal_id")), 10, 64)
+	if err != nil || jadwalID <= 0 {
+		h.d.Render.Error(w, r, http.StatusBadRequest, "Pilih jadwal yang valid")
+		return
+	}
+	user := middleware.UserFrom(r.Context())
+	err = h.svc.Simpan(r.Context(), user.PekerjaID, jadwalID, r.FormValue("jam_masuk"), r.FormValue("jam_keluar"))
+	switch {
+	case err == nil:
+		http.Redirect(w, r, "/pekerja/absensi?sukses=1", http.StatusSeeOther)
+	case errors.Is(err, service.ErrInputTidakValid):
+		h.d.Render.Error(w, r, http.StatusBadRequest, "Jadwal atau jam presensi tidak valid. Jam keluar harus sama dengan atau sesudah jam selesai shift.")
+	case errors.Is(err, service.ErrBukanMilikSendiri):
+		h.d.Render.Error(w, r, http.StatusForbidden, "Jadwal tidak ditemukan atau bukan milik Anda")
+	case errors.Is(err, service.ErrHariDitutup), errors.Is(err, service.ErrPeriodeDitutup), errors.Is(err, service.ErrPresensiGanda):
+		h.d.Render.Error(w, r, http.StatusConflict, err.Error())
+	default:
+		log.Printf("simpan absensi: %v", err)
+		h.d.Render.Error(w, r, http.StatusInternalServerError, "Gagal menyimpan presensi")
+	}
 }
 
 func (h *AbsensiHandler) Riwayat(w http.ResponseWriter, r *http.Request) {
-	h.d.Render.Page(w, r, "absensi/riwayat.html", PageData{Title: "Riwayat Presensi", Menu: "absensi"})
+	user := middleware.UserFrom(r.Context())
+	items, err := h.svc.Riwayat(r.Context(), user.PekerjaID)
+	if err != nil {
+		log.Printf("riwayat absensi: %v", err)
+		h.d.Render.Error(w, r, http.StatusInternalServerError, "Gagal memuat riwayat presensi")
+		return
+	}
+	h.d.Render.Page(w, r, "absensi/riwayat.html", PageData{
+		Title: "Riwayat Presensi", Menu: "absensi",
+		Data: struct {
+			Riwayat []repository.RiwayatPresensi
+		}{Riwayat: items},
+	})
 }
