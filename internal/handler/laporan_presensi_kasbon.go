@@ -62,10 +62,7 @@ func (h *LaporanPresensiKasbonHandler) Presensi(w http.ResponseWriter, r *http.R
 	_, _, items, err := h.svc.Presensi(r.Context(), mulai, selesai, pekerjaID)
 	if err != nil {
 		if errors.Is(err, service.ErrInputTidakValid) {
-			h.d.Render.Page(w, r, "laporan/presensi.html", PageData{
-				Title: "Laporan Presensi", Menu: "laporan-presensi", Error: "Rentang tanggal tidak valid.",
-				Data: laporanPresensiData{Mulai: mulai, Selesai: selesai, PekerjaID: pekerjaID, Pekerja: workers},
-			})
+			h.d.Render.Error(w, r, http.StatusBadRequest, "Rentang tanggal tidak valid")
 			return
 		}
 		log.Printf("laporan presensi: %v", err)

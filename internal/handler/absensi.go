@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -49,17 +50,21 @@ func (h *AbsensiHandler) Form(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AbsensiHandler) Simpan(w http.ResponseWriter, r *http.Request) {
-	if err := r.ParseForm(); err != nil {
+	if !sameOriginRequest(r) {
+		h.d.Render.Error(w, r, http.StatusForbidden, "Permintaan lintas situs ditolak")
+		return
+	}
+	if err := parseLimitedForm(w, r); err != nil {
 		h.d.Render.Error(w, r, http.StatusBadRequest, "Form presensi tidak valid")
 		return
 	}
-	jadwalID, err := strconv.ParseInt(strings.TrimSpace(r.FormValue("jadwal_id")), 10, 64)
+	jadwalID, err := strconv.ParseInt(strings.TrimSpace(r.PostFormValue("jadwal_id")), 10, 64)
 	if err != nil || jadwalID <= 0 {
 		h.d.Render.Error(w, r, http.StatusBadRequest, "Pilih jadwal yang valid")
 		return
 	}
 	user := middleware.UserFrom(r.Context())
-	err = h.svc.Simpan(r.Context(), user.PekerjaID, jadwalID, r.FormValue("jam_masuk"), r.FormValue("jam_keluar"))
+	err = h.svc.Simpan(r.Context(), user.PekerjaID, jadwalID, r.PostFormValue("jam_masuk"), r.PostFormValue("jam_keluar"))
 	switch {
 	case err == nil:
 		http.Redirect(w, r, "/pekerja/absensi?sukses=1", http.StatusSeeOther)
@@ -89,4 +94,33 @@ func (h *AbsensiHandler) Riwayat(w http.ResponseWriter, r *http.Request) {
 			Riwayat []repository.RiwayatPresensi
 		}{Riwayat: items},
 	})
+}
+
+func sameOriginRequest(r *http.Request) bool {
+	source := strings.TrimSpace(r.Header.Get("Origin"))
+	isOrigin := source != ""
+	if !isOrigin {
+		source = strings.TrimSpace(r.Referer())
+	}
+	if source == "" {
+		return true
+	}
+
+	u, err := url.Parse(source)
+	if err != nil || u.Host == "" || u.User != nil {
+		return false
+	}
+	if isOrigin && (u.Path != "" && u.Path != "/" || u.RawQuery != "" || u.Fragment != "") {
+		return false
+	}
+	scheme := "http"
+	if r.TLS != nil {
+		scheme = "https"
+	}
+	return strings.EqualFold(u.Scheme, scheme) && strings.EqualFold(u.Host, r.Host)
+}
+
+func parseLimitedForm(w http.ResponseWriter, r *http.Request) error {
+	r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
+	return r.ParseForm()
 }

@@ -66,7 +66,11 @@ func (h *ValidasiHandler) Detail(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ValidasiHandler) Simpan(w http.ResponseWriter, r *http.Request) {
-	if err := r.ParseForm(); err != nil {
+	if !sameOriginRequest(r) {
+		h.d.Render.Error(w, r, http.StatusForbidden, "Permintaan lintas situs ditolak")
+		return
+	}
+	if err := parseLimitedForm(w, r); err != nil {
 		h.d.Render.Error(w, r, http.StatusBadRequest, "Form validasi tidak valid")
 		return
 	}
@@ -87,13 +91,13 @@ func (h *ValidasiHandler) Simpan(w http.ResponseWriter, r *http.Request) {
 
 	decisions := make(map[int64]service.InputKeputusanValidasi, len(items))
 	for _, item := range items {
-		if _, exists := r.Form["status_"+intString(item.ID)]; !exists {
+		if len(r.PostForm["status_"+intString(item.ID)]) != 1 {
 			h.renderDetail(w, r, tanggal, items, closed, "Tentukan keputusan untuk setiap presensi.")
 			return
 		}
 		decisions[item.ID] = service.InputKeputusanValidasi{
-			Status:  r.FormValue("status_" + intString(item.ID)),
-			Catatan: r.FormValue("catatan_" + intString(item.ID)),
+			Status:  r.PostFormValue("status_" + intString(item.ID)),
+			Catatan: r.PostFormValue("catatan_" + intString(item.ID)),
 		}
 	}
 

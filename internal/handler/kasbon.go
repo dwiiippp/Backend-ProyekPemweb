@@ -72,12 +72,16 @@ func (h *KasbonHandler) Form(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *KasbonHandler) Simpan(w http.ResponseWriter, r *http.Request) {
-	if err := r.ParseForm(); err != nil {
+	if !sameOriginRequest(r) {
+		h.d.Render.Error(w, r, http.StatusForbidden, "Permintaan lintas situs ditolak")
+		return
+	}
+	if err := parseLimitedForm(w, r); err != nil {
 		h.d.Render.Error(w, r, http.StatusBadRequest, "Form kasbon tidak valid")
 		return
 	}
-	nominal := strings.TrimSpace(r.FormValue("nominal"))
-	keterangan := strings.TrimSpace(r.FormValue("keterangan"))
+	nominal := strings.TrimSpace(r.PostFormValue("nominal"))
+	keterangan := strings.TrimSpace(r.PostFormValue("keterangan"))
 	user := middleware.UserFrom(r.Context())
 	err := h.svc.Buat(r.Context(), user.PekerjaID, nominal, keterangan, time.Now())
 	switch {

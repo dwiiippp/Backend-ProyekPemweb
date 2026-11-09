@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"penggajian/internal/model"
 	"penggajian/internal/repository"
 )
 
@@ -69,7 +70,7 @@ func (s *ValidasiService) Simpan(ctx context.Context, tanggalText string, valida
 
 	decisions := make([]repository.KeputusanValidasi, 0, len(items))
 	for _, item := range items {
-		if item.Status != "menunggu" {
+		if item.Status != model.ValidasiMenunggu {
 			return ErrHariDitutup
 		}
 		choice, ok := input[item.ID]
@@ -79,14 +80,14 @@ func (s *ValidasiService) Simpan(ctx context.Context, tanggalText string, valida
 		choice.Catatan = strings.TrimSpace(choice.Catatan)
 		decision := repository.KeputusanValidasi{AbsensiID: item.ID, Status: choice.Status}
 		switch choice.Status {
-		case "disetujui":
+		case model.ValidasiDisetujui:
 			late, overtime, err := hitungPresensi(item.JamMasukAktual, item.JamKeluarAktual, item.JamMasukShift, item.JamKeluarShift)
 			if err != nil {
 				return ErrInputTidakValid
 			}
 			decision.MenitTerlambat = sql.NullInt64{Int64: int64(late), Valid: true}
 			decision.JamLembur = sql.NullString{String: overtime.StringFixed(2), Valid: true}
-		case "ditolak":
+		case model.ValidasiDitolak:
 			if choice.Catatan == "" {
 				return ErrInputTidakValid
 			}
