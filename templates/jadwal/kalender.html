@@ -1,8 +1,58 @@
+
 {{define "content"}}
-<div class="card stub">
-  <h2>{{.Title}}</h2>
-  <p><span class="badge">STUB · Anggota 1</span></p>
-  <p><code>templates/jadwal/kalender.html</code> — F-05 Jadwal Kerja · UC-03</p>
-  <p>TODO: Kalender mingguan jadwal semua pekerja (admin).</p>
+<div class="card">
+    <h2>{{.Title}}</h2>
+
+    {{if .Flash}}
+    <div class="alert alert-success">{{.Flash}}</div>
+    {{end}}
+
+    {{if .Error}}
+    <div class="alert alert-error">{{.Error}}</div>
+    {{end}}
+
+    <p>
+        Periode:
+        {{.Data.AwalMinggu.Format "02-01-2006"}}
+        sampai
+        {{.Data.AkhirMinggu.Format "02-01-2006"}}
+    </p>
+
+    <a href="/admin/jadwal/baru">
+        <button type="button">Tambah Jadwal</button>
+    </a>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Tanggal</th>
+                <th>NIK</th>
+                <th>Nama Pekerja</th>
+                <th>Shift</th>
+                <th>Jam Masuk</th>
+                <th>Jam Keluar</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{range .Data.Jadwal}}
+            <tr>
+                <td>{{.TanggalJadwal.Format "02-01-2006"}}</td>
+                <td>{{.NIK}}</td>
+                <td>{{.NamaPekerja}}</td>
+                <td>{{.NamaShift}}</td>
+                <td>{{.JamMasuk}}</td>
+                <td>{{.JamKeluar}}</td>
+                <td>
+                    <a href="/admin/jadwal/{{.ID}}/edit">Edit</a>
+                </td>
+            </tr>
+            {{else}}
+            <tr>
+                <td colspan="7">Belum ada jadwal pada minggu ini.</td>
+            </tr>
+            {{end}}
+        </tbody>
+    </table>
 </div>
 {{end}}
