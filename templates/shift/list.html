@@ -1,8 +1,55 @@
 {{define "content"}}
-<div class="card stub">
-  <h2>{{.Title}}</h2>
-  <p><span class="badge">STUB · Anggota 1</span></p>
-  <p><code>templates/shift/list.html</code> — F-04 Kelola Shift (BR-05)</p>
-  <p>TODO: Daftar shift.</p>
+<div class="card">
+    <h2>{{.Title}}</h2>
+
+    {{if .Flash}}
+    <div class="alert alert-success">{{.Flash}}</div>
+    {{end}}
+
+    {{if .Error}}
+    <div class="alert alert-error">{{.Error}}</div>
+    {{end}}
+
+    <div>
+        <a href="/admin/shift/baru">
+            <button type="button">Tambah Shift</button>
+        </a>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>No</th>
+                <th>Nama Shift</th>
+                <th>Jam Masuk</th>
+                <th>Jam Keluar</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{range $index, $shift := .Data.Shifts}}
+            <tr>
+                <td>{{$index}}</td>
+                <td>{{$shift.NamaShift}}</td>
+                <td>{{$shift.JamMasuk}}</td>
+                <td>{{$shift.JamKeluar}}</td>
+                <td>
+                    <a href="/admin/shift/{{$shift.ID}}/edit">Edit</a>
+
+                    <form method="POST"
+                          action="/admin/shift/{{$shift.ID}}/hapus"
+                          style="display:inline;"
+                          onsubmit="return confirm('Yakin ingin menghapus shift ini?')">
+                        <button type="submit">Hapus</button>
+                    </form>
+                </td>
+            </tr>
+            {{else}}
+            <tr>
+                <td colspan="5">Belum ada data shift.</td>
+            </tr>
+            {{end}}
+        </tbody>
+    </table>
 </div>
 {{end}}
