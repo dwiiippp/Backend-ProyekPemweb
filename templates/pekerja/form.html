@@ -3,10 +3,6 @@
 <div class="card">
   <h2>{{.Title}}</h2>
 
-  {{if .Error}}
-    <p class="error">{{.Error}}</p>
-  {{end}}
-
   {{if .Data}}
   <form method="POST" action="/admin/pekerja/{{.Data.ID}}/edit">
   {{else}}

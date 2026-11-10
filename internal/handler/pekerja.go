@@ -209,19 +209,19 @@ func (h *PekerjaHandler) Update(w http.ResponseWriter, r *http.Request) {
 func (h *PekerjaHandler) Deactivate(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil || id <= 0 {
-		http.Error(w, "ID pekerja tidak valid", http.StatusBadRequest)
+		h.d.Render.Error(w, r, http.StatusBadRequest, "ID pekerja tidak valid")
 		return
 	}
 
 	err = h.svc.Deactivate(r.Context(), id)
 	if err != nil {
 		if errors.Is(err, service.ErrTidakDitemukan) {
-			http.Error(w, "Pekerja tidak ditemukan", http.StatusNotFound)
+			h.d.Render.Error(w, r, http.StatusNotFound, "Pekerja tidak ditemukan")
 			return
 		}
 
 		log.Printf("gagal menonaktifkan pekerja: %v", err)
-		http.Error(w, "Terja kesalahan pada server", http.StatusInternalServerError)
+		h.d.Render.Error(w, r, http.StatusInternalServerError, "Terjadi kesalahan pada server")
 		return
 	}
 

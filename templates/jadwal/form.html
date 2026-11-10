@@ -3,10 +3,6 @@
 <div class="card">
     <h2>{{.Title}}</h2>
 
-    {{if .Error}}
-    <div class="alert alert-error">{{.Error}}</div>
-    {{end}}
-
     <form method="POST" action="{{.Data.Action}}">
         <div class="form-group">
             <label for="pekerja_id">Pekerja</label>

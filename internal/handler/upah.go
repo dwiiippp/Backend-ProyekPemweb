@@ -30,14 +30,14 @@ func (h *UpahHandler) Register(mux *http.ServeMux, g Guards) {
 func (h *UpahHandler) List(w http.ResponseWriter, r *http.Request) {
 	pekerjaID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil || pekerjaID <= 0 {
-		http.Error(w, "ID pekerja tidak valid", http.StatusBadRequest)
+		h.d.Render.Error(w, r, http.StatusBadRequest, "ID pekerja tidak valid")
 		return
 	}
 
 	records, err := h.svc.List(r.Context(), pekerjaID)
 	if err != nil {
 		log.Printf("gagal mengambil riwayat upah; %v", err)
-		http.Error(w, "Terjadi kesalahan pada server", http.StatusInternalServerError)
+		h.d.Render.Error(w, r, http.StatusInternalServerError, "Terjadi kesalahan saat mengambil riwayat upah")
 		return
 	}
 
@@ -54,7 +54,7 @@ func (h *UpahHandler) List(w http.ResponseWriter, r *http.Request) {
 func (h *UpahHandler) NewForm(w http.ResponseWriter, r *http.Request) {
 	pekerjaID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil || pekerjaID <= 0 {
-		http.Error(w, "ID pekerja tidak valid", http.StatusBadRequest)
+		h.d.Render.Error(w, r, http.StatusBadRequest, "ID pekerja tidak valid")
 		return
 	}
 
@@ -70,24 +70,24 @@ func (h *UpahHandler) NewForm(w http.ResponseWriter, r *http.Request) {
 func (h *UpahHandler) Create(w http.ResponseWriter, r *http.Request) {
 	pekerjaID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil || pekerjaID <= 0 {
-		http.Error(w, "ID pekerja tidak valid", http.StatusBadRequest)
+		h.d.Render.Error(w, r, http.StatusBadRequest, "ID pekerja tidak valid")
 		return
 	}
 
 	if err := r.ParseForm(); err != nil {
-		http.Error(w, "Form tidak valid", http.StatusBadRequest)
+		h.d.Render.Error(w, r, http.StatusBadRequest, "Form tidak valid")
 		return
 	}
 
 	nominal, err := strconv.ParseFloat(r.FormValue("nominal_gaji"), 64)
 	if err != nil {
-		http.Error(w, "Nominal upah tidak valid", http.StatusBadRequest)
+		h.d.Render.Error(w, r, http.StatusBadRequest, "Nominal upah tidak valid")
 		return
 	}
 
 	tanggal, err := time.Parse("2006-01-02", r.FormValue("tanggal_berlaku"))
 	if err != nil {
-		http.Error(w, "Tanggal berlaku tidak valid", http.StatusBadRequest)
+		h.d.Render.Error(w, r, http.StatusBadRequest, "Tanggal berlaku tidak valid")
 		return
 	}
 
@@ -99,17 +99,17 @@ func (h *UpahHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		if errors.Is(err, service.ErrInputTidakValid) {
-			http.Error(w, "Data upah tidak valid", http.StatusBadRequest)
+			h.d.Render.Error(w, r, http.StatusBadRequest, "Data upah tidak valid")
 			return
 		}
 
 		if errors.Is(err, service.ErrTanggalUpahDuplikat) {
-			http.Error(w, "Tanggal berlaku tersebut sudah memiliki riwayat upah. Gunakan tanggal lain.", http.StatusConflict)
+			h.d.Render.Error(w, r, http.StatusConflict, "Tanggal berlaku tersebut sudah memiliki riwayat upah. Gunakan tanggal lain.")
 			return
 		}
 
 		log.Printf("gagal menyimpan riawyat upah: %v", err)
-		http.Error(w, "Gagal menyimpan riwayat upah", http.StatusInternalServerError)
+		h.d.Render.Error(w, r, http.StatusInternalServerError, "Gagal menyimpan riwayat upah")
 		return
 	}
 

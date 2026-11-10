@@ -2,14 +2,6 @@
 <div class="card">
     <h2>{{.Title}}</h2>
 
-    {{if .Flash}}
-    <div class="alert alert-success">{{.Flash}}</div>
-    {{end}}
-
-    {{if .Error}}
-    <div class="alert alert-error">{{.Error}}</div>
-    {{end}}
-
     <div>
         <a href="/admin/shift/baru">
             <button type="button">Tambah Shift</button>

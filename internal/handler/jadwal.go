@@ -43,7 +43,7 @@ func (h *JadwalHandler) NewForm(w http.ResponseWriter, r *http.Request) {
 	shifts, err := h.svc.GetShiftAktif(r.Context())
 	if err != nil {
 		log.Printf("daftar shift jadwal: %v", err)
-		h.d.Render.Error(w, r, http.StatusInternalServerError, "Gagal memgambil daftar shift")
+		h.d.Render.Error(w, r, http.StatusInternalServerError, "Gagal mengambil daftar shift")
 		return
 	}
 
@@ -176,17 +176,17 @@ func (h *JadwalHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.svc.Update(r.Context(), id, input); err != nil {
 		if errors.Is(err, service.ErrInputTidakValid) {
-			h.d.Render.Error(w, r, http.StatusNotFound, "Jadwal tima ditemukan")
+			h.d.Render.Error(w, r, http.StatusBadRequest, "Data jadwal tidak valid. Periksa kembali input yang diberikan")
 			return
 		}
 
 		if errors.Is(err, repository.ErrJadwalDuplikat) {
-			h.d.Render.Error(w, r, http.StatusConflict, "Pekerja tersebut sudah memili jadwal pada tanggal yang dipilih")
+			h.d.Render.Error(w, r, http.StatusConflict, "Pekerja tersebut sudah memiliki jadwal pada tanggal yang dipilih")
 			return
 		}
 
 		log.Printf("update jadwal: %v", err)
-		h.d.Render.Error(w, r, http.StatusInternalServerError, "Gagal memperhbarui jadwal")
+		h.d.Render.Error(w, r, http.StatusInternalServerError, "Gagal memperbarui jadwal")
 		return
 	}
 

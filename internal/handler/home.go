@@ -79,7 +79,7 @@ func (h *HomeHandler) Profil(w http.ResponseWriter, r *http.Request) {
 	profil, err := h.svc.GetProfile(r.Context(), user.PekerjaID)
 	if err != nil {
 		log.Printf("profil pekerja: %v", err)
-		h.d.Render.Error(w, r, http.StatusInternalServerError, "Gagal memgambil data profil")
+		h.d.Render.Error(w, r, http.StatusInternalServerError, "Gagal mengambil data profil")
 		return
 	}
 

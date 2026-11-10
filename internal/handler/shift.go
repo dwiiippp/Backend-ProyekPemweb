@@ -78,7 +78,7 @@ func (h *ShiftHandler) EditForm(w http.ResponseWriter, r *http.Request) {
 		}
 
 		log.Printf("edit form shift: %v", err)
-		h.d.Render.Error(w, r, http.StatusInternalServerError, "Gagaal mengambil data shift")
+		h.d.Render.Error(w, r, http.StatusInternalServerError, "Gagal mengambil data shift")
 		return
 	}
 
