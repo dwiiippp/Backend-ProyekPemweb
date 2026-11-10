@@ -1,8 +1,29 @@
 {{define "content"}}
-<div class="card stub">
+<div class="card">
   <h2>{{.Title}}</h2>
-  <p><span class="badge">STUB · Anggota 2</span></p>
-  <p><code>templates/absensi/riwayat.html</code> — F-06 · UC-04 Input Presensi · UC-05 Riwayat (BR-13, BR-15)</p>
-  <p>TODO: Riwayat presensi + status validasi + catatan penolakan.</p>
+  <p><a href="/pekerja/absensi">Input presensi</a></p>
+</div>
+<div class="card">
+  {{if .Data.Riwayat}}
+  <table>
+    <thead><tr><th>Tanggal</th><th>Shift</th><th>Masuk</th><th>Keluar</th><th>Terlambat</th><th>Lembur</th><th>Status</th><th>Catatan</th></tr></thead>
+    <tbody>
+      {{range .Data.Riwayat}}
+      <tr>
+        <td>{{tanggal .Tanggal}}</td>
+        <td>{{.NamaShift}}</td>
+        <td>{{.JamMasukAktual.Format "15:04"}}</td>
+        <td>{{.JamKeluarAktual.Format "15:04"}}</td>
+        <td>{{if .MenitTerlambat.Valid}}{{.MenitTerlambat.Int64}} menit{{else}}-{{end}}</td>
+        <td>{{if .JamLembur.Valid}}{{.JamLembur.Decimal}} jam{{else}}-{{end}}</td>
+        <td>{{.Status}}</td>
+        <td>{{if .Catatan.Valid}}{{.Catatan.String}}{{else}}-{{end}}</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{else}}
+  <p>Belum ada riwayat presensi.</p>
+  {{end}}
 </div>
 {{end}}

@@ -1,8 +1,49 @@
 {{define "content"}}
-<div class="card stub">
-  <h2>{{.Title}}</h2>
-  <p><span class="badge">STUB · Anggota 1</span></p>
-  <p><code>templates/shift/form.html</code> — F-04 Kelola Shift (BR-05)</p>
-  <p>TODO: Form tambah/ubah shift.</p>
+<div class="card">
+    <h2>{{.Title}}</h2>
+
+    <form method="POST" action="{{.Data.Action}}">
+        <div class="form-group">
+            <label for="nama_shift">Nama Shift</label>
+            <input
+                type="text"
+                id="nama_shift"
+                name="nama_shift"
+                value="{{.Data.Shift.NamaShift}}"
+                maxlength="50"
+                placeholder="Contoh: Pagi"
+                required
+            >
+        </div>
+
+        <div class="form-group">
+            <label for="jam_masuk">Jam Masuk</label>
+            <input
+                type="time"
+                id="jam_masuk"
+                name="jam_masuk"
+                value="{{.Data.Shift.JamMasuk}}"
+                step="1"
+                required
+            >
+        </div>
+
+        <div class="form-group">
+            <label for="jam_keluar">Jam Keluar</label>
+            <input
+                type="time"
+                id="jam_keluar"
+                name="jam_keluar"
+                value="{{.Data.Shift.JamKeluar}}"
+                step="1"
+                required
+            >
+        </div>
+
+        <div>
+            <button type="submit">Simpan</button>
+            <a href="/admin/shift">Batal</a>
+        </div>
+    </form>
 </div>
 {{end}}

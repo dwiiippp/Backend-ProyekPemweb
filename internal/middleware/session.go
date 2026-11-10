@@ -3,78 +3,77 @@
 package middleware
 
 import (
-	"crypto/rand"
-	"encoding/hex"
+	"context"
+	"database/sql"
 	"net/http"
-	"sync"
 	"time"
 
 	"penggajian/internal/model"
+	"penggajian/internal/repository"
 )
 
-const cookieName = "sid"
+const (
+	cookieName = "session"
+	sessionTTL = 7 * 24 * time.Hour
+)
 
-type sessionEntry struct {
-	user    model.SessionUser
-	expires time.Time
-}
-
-// Manager menyimpan session di memori server (cukup untuk proyek ini;
-// session hilang saat server restart).
 type Manager struct {
-	mu   sync.RWMutex
-	data map[string]sessionEntry
-	ttl  time.Duration
+	repo   *repository.SessionRepository
+	secure bool
 }
 
-func NewSessionManager() *Manager {
-	return &Manager{data: make(map[string]sessionEntry), ttl: 8 * time.Hour}
+func NewSessionManager(db *sql.DB, cookieSecure bool) *Manager {
+	return &Manager{
+		repo:   repository.NewSessionRepository(db),
+		secure: cookieSecure,
+	}
 }
 
-// Create membuat session baru dan mengirim cookie ke browser. Dipanggil setelah login berhasil.
-func (m *Manager) Create(w http.ResponseWriter, u model.SessionUser) error {
-	b := make([]byte, 32)
-	if _, err := rand.Read(b); err != nil {
+// Create menyimpan sesi ke database dan mengirim token melalui cookie
+func (m *Manager) Create(ctx context.Context, w http.ResponseWriter, u model.SessionUser) error {
+	token, err := m.repo.Create(ctx, u.UserID)
+	if err != nil {
 		return err
 	}
-	token := hex.EncodeToString(b)
-
-	m.mu.Lock()
-	m.data[token] = sessionEntry{user: u, expires: time.Now().Add(m.ttl)}
-	m.mu.Unlock()
 
 	http.SetCookie(w, &http.Cookie{
 		Name:     cookieName,
 		Value:    token,
 		Path:     "/",
+		MaxAge:   int(sessionTTL.Seconds()),
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
-		MaxAge:   int(m.ttl.Seconds()),
+		Secure:   m.secure,
 	})
 	return nil
 }
 
-// Destroy menghapus session dan cookie. Dipanggil saat logout.
-func (m *Manager) Destroy(w http.ResponseWriter, r *http.Request) {
-	if c, err := r.Cookie(cookieName); err == nil {
-		m.mu.Lock()
-		delete(m.data, c.Value)
-		m.mu.Unlock()
+// Destroy menghapus session dan cookie
+func (m *Manager) Destroy(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	var deleteErr error
+
+	cookie, err := r.Cookie(cookieName)
+	if err == nil {
+		deleteErr = m.repo.Delete(ctx, cookie.Value)
 	}
-	http.SetCookie(w, &http.Cookie{Name: cookieName, Value: "", Path: "/", MaxAge: -1, HttpOnly: true})
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     cookieName,
+		Value:    "",
+		Path:     "/",
+		MaxAge:   -1,
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+		Secure:   m.secure,
+	})
+	return deleteErr
+
 }
 
-func (m *Manager) lookup(r *http.Request) *model.SessionUser {
-	c, err := r.Cookie(cookieName)
+func (m *Manager) lookup(ctx context.Context, r *http.Request) (*model.SessionUser, error) {
+	cookie, err := r.Cookie(cookieName)
 	if err != nil {
-		return nil
+		return nil, nil
 	}
-	m.mu.RLock()
-	e, ok := m.data[c.Value]
-	m.mu.RUnlock()
-	if !ok || time.Now().After(e.expires) {
-		return nil
-	}
-	u := e.user
-	return &u
+	return m.repo.FindUserByToken(ctx, cookie.Value)
 }

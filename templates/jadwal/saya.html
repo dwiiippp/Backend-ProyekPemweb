@@ -1,8 +1,31 @@
+
 {{define "content"}}
-<div class="card stub">
-  <h2>{{.Title}}</h2>
-  <p><span class="badge">STUB · Anggota 1</span></p>
-  <p><code>templates/jadwal/saya.html</code> — F-05 Jadwal Kerja · UC-03</p>
-  <p>TODO: Jadwal shift milik pekerja yang login (UC-03).</p>
+<div class="card">
+    <h2>{{.Title}}</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Tanggal</th>
+                <th>Shift</th>
+                <th>Jam Masuk</th>
+                <th>Jam Keluar</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{range .Data.Jadwal}}
+            <tr>
+                <td>{{.TanggalJadwal.Format "02-01-2006"}}</td>
+                <td>{{.NamaShift}}</td>
+                <td>{{.JamMasuk}}</td>
+                <td>{{.JamKeluar}}</td>
+            </tr>
+            {{else}}
+            <tr>
+                <td colspan="4">Belum ada jadwal kerja.</td>
+            </tr>
+            {{end}}
+        </tbody>
+    </table>
 </div>
 {{end}}

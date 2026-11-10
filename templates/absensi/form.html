@@ -1,8 +1,30 @@
 {{define "content"}}
-<div class="card stub">
+<div class="card">
   <h2>{{.Title}}</h2>
-  <p><span class="badge">STUB · Anggota 2</span></p>
-  <p><code>templates/absensi/form.html</code> — F-06 · UC-04 Input Presensi · UC-05 Riwayat (BR-13, BR-15)</p>
-  <p>TODO: Pilih jadwal hari ini, isi jam masuk & keluar.</p>
+  <p>Catat jam masuk dan jam keluar sesuai jadwal kerja Anda. Presensi yang dikirim akan menunggu validasi admin.</p>
+  <p><a href="/pekerja/absensi/riwayat">Lihat riwayat presensi</a></p>
+</div>
+<div class="card">
+  {{if .Data.Jadwal}}
+  <form method="post" action="/pekerja/absensi">
+    <label>Jadwal
+      <select name="jadwal_id" required>
+        <option value="">Pilih jadwal</option>
+        {{range .Data.Jadwal}}
+        <option value="{{.ID}}">{{tanggal .Tanggal}} · {{.NamaShift}} ({{.JamMasukShift}}–{{.JamKeluarShift}})</option>
+        {{end}}
+      </select>
+    </label>
+    <label>Jam masuk aktual
+      <input type="time" name="jam_masuk" required>
+    </label>
+    <label>Jam keluar aktual
+      <input type="time" name="jam_keluar" required>
+    </label>
+    <button class="btn" type="submit">Kirim presensi</button>
+  </form>
+  {{else}}
+  <p>Tidak ada jadwal yang dapat diinputkan. Jadwal mungkin belum tersedia, sudah memiliki presensi, atau tanggalnya telah ditutup.</p>
+  {{end}}
 </div>
 {{end}}

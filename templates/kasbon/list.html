@@ -1,8 +1,24 @@
 {{define "content"}}
-<div class="card stub">
+<div class="card">
   <h2>{{.Title}}</h2>
-  <p><span class="badge">STUB · Anggota 2</span></p>
-  <p><code>templates/kasbon/list.html</code> — F-08 · UC-11 Kelola Kasbon · UC-07 Riwayat Kasbon</p>
-  <p>TODO: Daftar kasbon + sisa + status.</p>
+  <p>Daftar kasbon seluruh pekerja beserta nominal, sisa, dan statusnya.</p>
+</div>
+<div class="card">
+  {{if .Data.Kasbon}}
+  <table>
+    <thead><tr><th>Tanggal</th><th>Pekerja</th><th>NIK</th><th>Nominal</th><th>Sisa</th><th>Status</th><th>Keterangan</th></tr></thead>
+    <tbody>
+      {{range .Data.Kasbon}}
+      <tr>
+        <td>{{tanggal .TanggalPengajuan}}</td><td>{{.NamaPekerja}}</td><td>{{.NIK}}</td>
+        <td>{{rupiah .Nominal}}</td><td>{{rupiah .Sisa}}</td><td>{{.Status}}</td>
+        <td>{{if .Keterangan.Valid}}{{.Keterangan.String}}{{else}}-{{end}}</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{else}}
+  <p>Belum ada data kasbon.</p>
+  {{end}}
 </div>
 {{end}}

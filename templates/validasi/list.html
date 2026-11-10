@@ -1,8 +1,26 @@
 {{define "content"}}
-<div class="card stub">
+<div class="card">
   <h2>{{.Title}}</h2>
-  <p><span class="badge">STUB · Anggota 2</span></p>
-  <p><code>templates/validasi/list.html</code> — F-14 · UC-10 Validasi Presensi Harian (BR-14)</p>
-  <p>TODO: Daftar tanggal + jumlah presensi menunggu + status ditutup.</p>
+  <p>Setujui atau tolak seluruh presensi dalam satu tanggal. Setelah disimpan, tanggal tersebut ditutup.</p>
+</div>
+<div class="card">
+  {{if .Data.Hari}}
+  <table>
+    <thead><tr><th>Tanggal</th><th>Jumlah presensi</th><th>Menunggu</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+      {{range .Data.Hari}}
+      <tr>
+        <td>{{tanggal .Tanggal}}</td>
+        <td>{{.Jumlah}}</td>
+        <td>{{.Menunggu}}</td>
+        <td>{{if .Ditutup}}Ditutup{{else}}Menunggu validasi{{end}}</td>
+        <td><a href="/admin/validasi/{{.Tanggal.Format "2006-01-02"}}">Detail</a></td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{else}}
+  <p>Belum ada presensi untuk divalidasi.</p>
+  {{end}}
 </div>
 {{end}}

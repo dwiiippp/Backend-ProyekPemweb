@@ -1,8 +1,54 @@
+
 {{define "content"}}
-<div class="card stub">
+<div class="card">
   <h2>{{.Title}}</h2>
-  <p><span class="badge">STUB · Anggota 1</span></p>
-  <p><code>templates/pekerja/form.html</code> — F-02 · UC-08 Kelola Pekerja</p>
-  <p>TODO: Form tambah/ubah pekerja + akun login (simpan users & pekerja dalam satu transaksi).</p>
+
+  {{if .Data}}
+  <form method="POST" action="/admin/pekerja/{{.Data.ID}}/edit">
+  {{else}}
+  <form method="POST" action="/admin/pekerja">
+  {{end}}
+
+    <div>
+      <label for="nik">NIK</label>
+      <input type="text" id="nik" name="nik" value="{{if .Data}}{{.Data.NIK}}{{end}}"required>
+    </div>
+
+    <div>
+      <label for="nama">Nama Lengkap</label>
+      <input type="text" id="nama" name="nama" value="{{if .Data}}{{.Data.Nama}}{{end}}" required>
+    </div>
+
+    <div>
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" value="{{if .Data}}{{.Data.Email}}{{end}}" required>
+    </div>
+
+    {{if not .Data}}
+    <div>
+      <label for="password">Password Akun</label>
+      <input type="password" id="password" name="password"
+             minlength="8" required>
+      <small>Minimal 8 karakter.</small>
+    </div>
+    {{end}}
+
+    <div>
+      <label for="kategori_kerja">Kategori Kerja</label>
+      <select id="kategori_kerja" name="kategori_kerja" required>
+        <option value="">-- Pilih Kategori --</option>
+        <option value="harian" {{if and .Data (eq .Data.KategoriKerja "harian")}}selected{{end}}>Harian</option>
+        <option value="bulanan" {{if and .Data (eq .Data.KategoriKerja "bulanan")}}selected{{end}}>Bulanan</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="tanggal_masuk">Tanggal Masuk</label>
+      <input type="date" id="tanggal_masuk" name="tanggal_masuk" value="{{if .Data}}{{.Data.TanggalMasuk.Format "2006-01-02"}}{{end}}" required>
+    </div>
+
+    <button type="submit" > {{if .Data}}Simpan Perubahan{{else}}Simpan Pekerja{{end}} </button>
+    <a href="/admin/pekerja">Batal</a>
+  </form>
 </div>
 {{end}}

@@ -1,8 +1,23 @@
 {{define "content"}}
-<div class="card stub">
+<div class="card">
   <h2>{{.Title}}</h2>
-  <p><span class="badge">STUB · Anggota 2</span></p>
-  <p><code>templates/laporan/kasbon.html</code> — F-12 Laporan presensi & rekap kasbon</p>
-  <p>TODO: Rekap kasbon per pekerja.</p>
+  <p>Rekap jumlah dan total kasbon serta sisa kasbon aktif per pekerja.</p>
+</div>
+<div class="card">
+  {{if .Data.Rekap}}
+  <table>
+    <thead><tr><th>Pekerja</th><th>NIK</th><th>Jumlah kasbon</th><th>Total nominal</th><th>Sisa kasbon aktif</th></tr></thead>
+    <tbody>
+      {{range .Data.Rekap}}
+      <tr>
+        <td>{{.NamaPekerja}}</td><td>{{.NIK}}</td><td>{{.Jumlah}}</td>
+        <td>{{rupiah .Total}}</td><td>{{rupiah .Sisa}}</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{else}}
+  <p>Belum ada data kasbon untuk direkap.</p>
+  {{end}}
 </div>
 {{end}}

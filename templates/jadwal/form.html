@@ -1,8 +1,48 @@
+
 {{define "content"}}
-<div class="card stub">
-  <h2>{{.Title}}</h2>
-  <p><span class="badge">STUB · Anggota 1</span></p>
-  <p><code>templates/jadwal/form.html</code> — F-05 Jadwal Kerja · UC-03</p>
-  <p>TODO: Form atur jadwal: satu pekerja satu jadwal per hari.</p>
+<div class="card">
+    <h2>{{.Title}}</h2>
+
+    <form method="POST" action="{{.Data.Action}}">
+        <div class="form-group">
+            <label for="pekerja_id">Pekerja</label>
+            <select id="pekerja_id" name="pekerja_id" required>
+                <option value="">-- Pilih Pekerja --</option>
+                {{range .Data.Pekerja}}
+                <option value="{{.ID}}" {{if eq .ID $.Data.Jadwal.PekerjaID}}selected{{end}}>
+                    {{.Nama}}
+                </option>
+                {{end}}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="shift_id">Shift</label>
+            <select id="shift_id" name="shift_id" required>
+                <option value="">-- Pilih Shift --</option>
+                {{range .Data.Shifts}}
+                <option value="{{.ID}}" {{if eq .ID $.Data.Jadwal.ShiftID}}selected{{end}}>
+                    {{.NamaShift}}
+                </option>
+                {{end}}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="tanggal_jadwal">Tanggal Jadwal</label>
+            <input
+                type="date"
+                id="tanggal_jadwal"
+                name="tanggal_jadwal"
+                value="{{.Data.Tanggal}}"
+                required
+            >
+        </div>
+
+        <div>
+            <button type="submit">Simpan Jadwal</button>
+            <a href="/admin/jadwal">Batal</a>
+        </div>
+    </form>
 </div>
 {{end}}
