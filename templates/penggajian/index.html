@@ -1,8 +1,43 @@
 {{define "content"}}
-<div class="card stub">
+<div class="card">
   <h2>{{.Title}}</h2>
-  <p><span class="badge">STUB · Anggota 3</span></p>
-  <p><code>templates/penggajian/index.html</code> — F-07 · F-09 · UC-12 Proses Penggajian · UC-13 Tutup Periode</p>
-  <p>TODO: Pilih periode terbuka.</p>
+  <p>Pilih periode gaji berstatus <strong>terbuka</strong> untuk pratinjau perhitungan dan penutupan periode, atau lihat hasil untuk periode yang sudah ditutup.</p>
+</div>
+
+<div class="card">
+  {{if .Data.Periode}}
+  <table>
+    <thead>
+      <tr>
+        <th>Jenis</th>
+        <th>Tanggal Mulai</th>
+        <th>Tanggal Selesai</th>
+        <th>Tanggal Pembayaran</th>
+        <th>Status</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .Data.Periode}}
+      <tr>
+        <td>{{.JenisPeriode}}</td>
+        <td>{{tanggal .TanggalMulai}}</td>
+        <td>{{tanggal .TanggalSelesai}}</td>
+        <td>{{tanggal .TanggalPembayaran}}</td>
+        <td><span class="badge">{{.Status}}</span></td>
+        <td>
+          {{if .Terbuka}}
+          <a class="btn small" href="/admin/penggajian/{{.ID}}/pratinjau">Proses / Pratinjau</a>
+          {{else}}
+          <a href="/admin/penggajian/{{.ID}}/hasil">Lihat Hasil</a>
+          {{end}}
+        </td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{else}}
+  <p>Belum ada periode gaji. <a href="/admin/periode/baru">Buat periode baru</a>.</p>
+  {{end}}
 </div>
 {{end}}

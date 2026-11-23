@@ -1,8 +1,68 @@
 {{define "content"}}
-<div class="card stub">
+<div class="card">
   <h2>{{.Title}}</h2>
-  <p><span class="badge">STUB · Anggota 3</span></p>
-  <p><code>templates/slip/list.html</code> — F-11 · UC-06 Lihat Slip · UC-15 Cetak Slip (BR-12)</p>
-  <p>TODO: Pilih periode & pekerja.</p>
+  <p>Daftar slip gaji pekerja dari periode yang sudah ditutup.</p>
+
+  <form method="GET" action="/admin/slip" style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:flex-end;">
+    <label style="margin-bottom:0;">Periode
+      <select name="periode_id" style="display:block;padding:.45rem;margin-top:.25rem;border:1px solid #c4ccd6;border-radius:4px;">
+        <option value="0">Semua periode ditutup</option>
+        {{range .Data.Periode}}
+        <option value="{{.ID}}" {{if eq $.Data.PeriodeID .ID}}selected{{end}}>
+          {{.JenisPeriode}} ({{tanggal .TanggalMulai}} s.d. {{tanggal .TanggalSelesai}})
+        </option>
+        {{end}}
+      </select>
+    </label>
+
+    <label style="margin-bottom:0;">Pekerja
+      <select name="pekerja_id" style="display:block;padding:.45rem;margin-top:.25rem;border:1px solid #c4ccd6;border-radius:4px;">
+        <option value="0">Semua pekerja</option>
+        {{range .Data.Pekerja}}
+        <option value="{{.ID}}" {{if eq $.Data.PekerjaID .ID}}selected{{end}}>
+          {{.Nama}} ({{.NIK}})
+        </option>
+        {{end}}
+      </select>
+    </label>
+
+    <button class="btn" type="submit">Filter</button>
+    <a href="/admin/slip">Reset</a>
+  </form>
+</div>
+
+<div class="card">
+  {{if .Data.Slip}}
+  <table>
+    <thead>
+      <tr>
+        <th>Periode</th>
+        <th>Pekerja</th>
+        <th>Kategori</th>
+        <th>Gaji Kotor</th>
+        <th>Potongan Kasbon</th>
+        <th>Gaji Bersih</th>
+        <th>Tgl Bayar</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .Data.Slip}}
+      <tr>
+        <td>{{.JenisPeriode}} ({{tanggal .TanggalMulai}} s.d. {{tanggal .TanggalSelesai}})</td>
+        <td>{{.NamaPekerja}} ({{.NIK}})</td>
+        <td>{{.KategoriKerja}}</td>
+        <td>{{rupiah .GajiKotor}}</td>
+        <td>{{rupiah .PotonganKasbon}}</td>
+        <td><strong>{{rupiah .GajiBersih}}</strong></td>
+        <td>{{tanggal .TanggalPembayaran}}</td>
+        <td><a class="btn small" href="/admin/slip/{{.GajiID}}">Lihat / Cetak</a></td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{else}}
+  <p>Belum ada slip gaji yang sesuai filter (pastikan sudah ada periode yang dikonfirmasi &amp; ditutup).</p>
+  {{end}}
 </div>
 {{end}}

@@ -1,8 +1,47 @@
 {{define "content"}}
-<div class="card stub">
+<div class="card">
   <h2>{{.Title}}</h2>
-  <p><span class="badge">STUB · Anggota 3</span></p>
-  <p><code>templates/periode/list.html</code> — Periode Gaji (BR-01, BR-02, BR-10)</p>
-  <p>TODO: Daftar periode + status terbuka/ditutup.</p>
+  <p>Daftar periode penggajian mingguan (Senin–Sabtu) dan bulanan.</p>
+  <p>
+    <a class="btn" href="/admin/periode/baru">+ Buat Periode Baru</a>
+  </p>
+</div>
+
+<div class="card">
+  {{if .Data.Periode}}
+  <table>
+    <thead>
+      <tr>
+        <th>Jenis</th>
+        <th>Tanggal Mulai</th>
+        <th>Tanggal Selesai</th>
+        <th>Tanggal Pembayaran</th>
+        <th>Status</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .Data.Periode}}
+      <tr>
+        <td>{{.JenisPeriode}}</td>
+        <td>{{tanggal .TanggalMulai}}</td>
+        <td>{{tanggal .TanggalSelesai}}</td>
+        <td>{{tanggal .TanggalPembayaran}}</td>
+        <td><span class="badge">{{.Status}}</span></td>
+        <td>
+          <a href="/admin/periode/{{.ID}}">Detail</a>
+          {{if .Terbuka}}
+          · <a href="/admin/penggajian/{{.ID}}/pratinjau">Proses Gaji</a>
+          {{else}}
+          · <a href="/admin/penggajian/{{.ID}}/hasil">Hasil Gaji</a>
+          {{end}}
+        </td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{else}}
+  <p>Belum ada periode gaji.</p>
+  {{end}}
 </div>
 {{end}}

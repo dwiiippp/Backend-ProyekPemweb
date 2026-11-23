@@ -1,8 +1,84 @@
 {{define "content"}}
-<div class="card stub">
+<style>
+  @media print { .no-print { display: none !important; } }
+</style>
+
+<div class="card no-print">
   <h2>{{.Title}}</h2>
-  <p><span class="badge">STUB · Anggota 3</span></p>
-  <p><code>templates/laporan/rekap_gaji.html</code> — F-12 Laporan status periode & rekap biaya gaji/lembur</p>
-  <p>TODO: Rekap biaya gaji dan lembur per periode.</p>
+  <p>Rekapitulasi biaya gaji pokok, lembur, potongan keterlambatan, dan potongan kasbon untuk periode yang sudah ditutup.</p>
+
+  <form method="GET" action="/admin/laporan/rekap-gaji" style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:flex-end;">
+    <label style="margin-bottom:0;">Jenis Periode
+      <select name="jenis" style="display:block;padding:.45rem;margin-top:.25rem;border:1px solid #c4ccd6;border-radius:4px;">
+        <option value="">Semua jenis</option>
+        <option value="mingguan" {{if eq .Data.Jenis "mingguan"}}selected{{end}}>Mingguan</option>
+        <option value="bulanan" {{if eq .Data.Jenis "bulanan"}}selected{{end}}>Bulanan</option>
+      </select>
+    </label>
+
+    <label style="margin-bottom:0;">Dari Tanggal
+      <input type="date" name="mulai" value="{{.Data.Mulai}}">
+    </label>
+
+    <label style="margin-bottom:0;">Sampai Tanggal
+      <input type="date" name="selesai" value="{{.Data.Selesai}}">
+    </label>
+
+    <button class="btn" type="submit">Filter</button>
+    <a href="/admin/laporan/rekap-gaji">Reset</a>
+    <button class="btn" type="button" onclick="window.print()">Cetak</button>
+  </form>
+</div>
+
+<div class="card">
+  <h3>Rekapitulasi Biaya Penggajian</h3>
+  {{if .Data.Ringkasan.Items}}
+  <table>
+    <thead>
+      <tr>
+        <th>Periode</th>
+        <th>Tgl Bayar</th>
+        <th>Pekerja</th>
+        <th>Gaji Pokok</th>
+        <th>Pot. Telat</th>
+        <th>Upah Lembur</th>
+        <th>Proporsional</th>
+        <th>Gaji Kotor</th>
+        <th>Pot. Kasbon</th>
+        <th>Gaji Bersih</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .Data.Ringkasan.Items}}
+      <tr>
+        <td>{{.JenisPeriode}} ({{tanggal .TanggalMulai}} s.d. {{tanggal .TanggalSelesai}})</td>
+        <td>{{tanggal .TanggalPembayaran}}</td>
+        <td>{{.JumlahPekerja}}</td>
+        <td>{{rupiah .TotalGajiPokok}}</td>
+        <td>{{rupiah .TotalPotonganTerlambat}}</td>
+        <td>{{rupiah .TotalUpahLembur}}</td>
+        <td>{{rupiah .TotalPenyesuaian}}</td>
+        <td>{{rupiah .TotalGajiKotor}}</td>
+        <td>{{rupiah .TotalPotonganKasbon}}</td>
+        <td><strong>{{rupiah .TotalGajiBersih}}</strong></td>
+      </tr>
+      {{end}}
+    </tbody>
+    <tfoot>
+      <tr>
+        <th colspan="3">Grand Total</th>
+        <th>{{rupiah .Data.Ringkasan.TotalGajiPokok}}</th>
+        <th>{{rupiah .Data.Ringkasan.TotalPotonganTerlambat}}</th>
+        <th>{{rupiah .Data.Ringkasan.TotalUpahLembur}}</th>
+        <th>{{rupiah .Data.Ringkasan.TotalPenyesuaian}}</th>
+        <th>{{rupiah .Data.Ringkasan.TotalGajiKotor}}</th>
+        <th>{{rupiah .Data.Ringkasan.TotalPotonganKasbon}}</th>
+        <th>{{rupiah .Data.Ringkasan.TotalGajiBersih}}</th>
+      </tr>
+    </tfoot>
+  </table>
+  {{else}}
+  <p>Belum ada data rekap penggajian (periode yang sudah ditutup belum tersedia untuk filter ini).</p>
+  {{end}}
 </div>
 {{end}}

@@ -1,8 +1,31 @@
 {{define "content"}}
-<div class="card stub">
+<div class="card">
   <h2>{{.Title}}</h2>
-  <p><span class="badge">STUB · Anggota 3</span></p>
-  <p><code>templates/periode/form.html</code> — Periode Gaji (BR-01, BR-02, BR-10)</p>
-  <p>TODO: Buat periode (mingguan Senin–Sabtu / bulanan).</p>
+  <p>Aturan periode: <strong>Mingguan</strong> wajib Senin sampai Sabtu (6 hari). <strong>Bulanan</strong> wajib tanggal 1 sampai hari terakhir bulan yang sama.</p>
+
+  <form method="POST" action="/admin/periode">
+    <label for="jenis_periode">Jenis Periode
+      <select name="jenis_periode" id="jenis_periode" required>
+        <option value="">Pilih jenis periode</option>
+        <option value="mingguan" {{if eq .Data.JenisPeriode "mingguan"}}selected{{end}}>Mingguan (Senin–Sabtu)</option>
+        <option value="bulanan" {{if eq .Data.JenisPeriode "bulanan"}}selected{{end}}>Bulanan (Tanggal 1–Akhir Bulan)</option>
+      </select>
+    </label>
+
+    <label for="tanggal_mulai">Tanggal Mulai
+      <input type="date" name="tanggal_mulai" id="tanggal_mulai" value="{{.Data.TanggalMulai}}" required>
+    </label>
+
+    <label for="tanggal_selesai">Tanggal Selesai
+      <input type="date" name="tanggal_selesai" id="tanggal_selesai" value="{{.Data.TanggalSelesai}}" required>
+    </label>
+
+    <label for="tanggal_pembayaran">Tanggal Pembayaran (Opsional)
+      <input type="date" name="tanggal_pembayaran" id="tanggal_pembayaran" value="{{.Data.TanggalPembayaran}}">
+    </label>
+
+    <button class="btn" type="submit">Simpan Periode</button>
+    <a href="/admin/periode">Kembali</a>
+  </form>
 </div>
 {{end}}

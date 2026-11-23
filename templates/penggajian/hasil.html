@@ -1,8 +1,66 @@
 {{define "content"}}
-<div class="card stub">
-  <h2>{{.Title}}</h2>
-  <p><span class="badge">STUB · Anggota 3</span></p>
-  <p><code>templates/penggajian/hasil.html</code> — F-07 · F-09 · UC-12 Proses Penggajian · UC-13 Tutup Periode</p>
-  <p>TODO: Hasil setelah konfirmasi & tutup periode.</p>
+<div class="card">
+  <h2>{{.Title}} — {{.Data.Hasil.Periode.JenisPeriode}}</h2>
+  <p>
+    <strong>Rentang:</strong> {{tanggal .Data.Hasil.Periode.TanggalMulai}} s.d. {{tanggal .Data.Hasil.Periode.TanggalSelesai}} ·
+    <strong>Tanggal Pembayaran:</strong> {{tanggal .Data.TanggalPembayaran}} ·
+    <strong>Status:</strong> <span class="badge">{{.Data.Hasil.Periode.Status}}</span>
+  </p>
+  <p>
+    <a class="btn" href="/admin/slip?periode_id={{.Data.Hasil.Periode.ID}}">Lihat Slip Gaji Periode Ini</a>
+    <a href="/admin/penggajian">Kembali ke Penggajian</a>
+  </p>
+</div>
+
+<div class="card">
+  {{if .Data.Hasil.Items}}
+  <table>
+    <thead>
+      <tr>
+        <th>NIK</th>
+        <th>Nama</th>
+        <th>Hadir</th>
+        <th>Gaji Pokok</th>
+        <th>Pot. Telat</th>
+        <th>Lembur</th>
+        <th>Proporsional</th>
+        <th>Koreksi</th>
+        <th>Gaji Kotor</th>
+        <th>Pot. Kasbon</th>
+        <th>Gaji Bersih</th>
+        <th>Slip</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .Data.Hasil.Items}}
+      <tr>
+        <td>{{.NIK}}</td>
+        <td>{{.NamaPekerja}}</td>
+        <td>{{.JumlahHariHadir}}</td>
+        <td>{{rupiah .GajiPokok}}</td>
+        <td>{{rupiah .PotonganTerlambat}}</td>
+        <td>{{rupiah .UpahLembur}}</td>
+        <td>{{rupiah .PenyesuaianProporsional}}</td>
+        <td>{{rupiah .TotalKoreksi}}</td>
+        <td>{{rupiah .GajiKotor}}</td>
+        <td>{{rupiah .PotonganKasbon}}</td>
+        <td><strong>{{rupiah .GajiBersih}}</strong></td>
+        <td><a href="/admin/slip/{{.GajiID}}">Cetak Slip</a></td>
+      </tr>
+      {{end}}
+    </tbody>
+    <tfoot>
+      <tr>
+        <th colspan="8">Total Periode</th>
+        <th>{{rupiah .Data.Hasil.TotalGajiKotor}}</th>
+        <th>{{rupiah .Data.Hasil.TotalPotonganKasbon}}</th>
+        <th>{{rupiah .Data.Hasil.TotalGajiBersih}}</th>
+        <th></th>
+      </tr>
+    </tfoot>
+  </table>
+  {{else}}
+  <p>Belum ada data gaji tersimpan pada periode ini.</p>
+  {{end}}
 </div>
 {{end}}

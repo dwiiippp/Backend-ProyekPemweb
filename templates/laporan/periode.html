@@ -1,8 +1,67 @@
 {{define "content"}}
-<div class="card stub">
+<div class="card">
   <h2>{{.Title}}</h2>
-  <p><span class="badge">STUB · Anggota 3</span></p>
-  <p><code>templates/laporan/periode.html</code> — F-12 Laporan status periode & rekap biaya gaji/lembur</p>
-  <p>TODO: Status tiap periode.</p>
+  <p>Ringkasan status validasi harian dan penutupan untuk seluruh periode gaji.</p>
+
+  <form method="GET" action="/admin/laporan/periode" style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:flex-end;">
+    <label style="margin-bottom:0;">Jenis Periode
+      <select name="jenis" style="display:block;padding:.45rem;margin-top:.25rem;border:1px solid #c4ccd6;border-radius:4px;">
+        <option value="">Semua jenis</option>
+        <option value="mingguan" {{if eq .Data.Jenis "mingguan"}}selected{{end}}>Mingguan</option>
+        <option value="bulanan" {{if eq .Data.Jenis "bulanan"}}selected{{end}}>Bulanan</option>
+      </select>
+    </label>
+
+    <label style="margin-bottom:0;">Status
+      <select name="status" style="display:block;padding:.45rem;margin-top:.25rem;border:1px solid #c4ccd6;border-radius:4px;">
+        <option value="">Semua status</option>
+        <option value="terbuka" {{if eq .Data.Status "terbuka"}}selected{{end}}>Terbuka</option>
+        <option value="ditutup" {{if eq .Data.Status "ditutup"}}selected{{end}}>Ditutup</option>
+      </select>
+    </label>
+
+    <button class="btn" type="submit">Filter</button>
+    <a href="/admin/laporan/periode">Reset</a>
+  </form>
+
+  <p style="margin-top:1rem;">
+    <strong>Periode Terbuka:</strong> {{.Data.Ringkasan.JumlahTerbuka}} ·
+    <strong>Periode Ditutup:</strong> {{.Data.Ringkasan.JumlahDitutup}}
+  </p>
+</div>
+
+<div class="card">
+  {{if .Data.Ringkasan.Items}}
+  <table>
+    <thead>
+      <tr>
+        <th>Jenis</th>
+        <th>Rentang Periode</th>
+        <th>Tgl Pembayaran</th>
+        <th>Status</th>
+        <th>Hari Tervalidasi</th>
+        <th>Pekerja Digaji</th>
+        <th>Total Gaji Bersih</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .Data.Ringkasan.Items}}
+      <tr>
+        <td>{{.JenisPeriode}}</td>
+        <td>{{tanggal .TanggalMulai}} s.d. {{tanggal .TanggalSelesai}}</td>
+        <td>{{tanggal .TanggalPembayaran}}</td>
+        <td><span class="badge">{{.Status}}</span></td>
+        <td>{{.HariTervalidasi}} / {{.TotalHariTerjadwal}} hari</td>
+        <td>{{.JumlahPekerjaDigaji}}</td>
+        <td>{{rupiah .TotalGajiBersih}}</td>
+        <td><a href="/admin/periode/{{.PeriodeID}}">Detail</a></td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{else}}
+  <p>Tidak ada periode gaji yang sesuai filter.</p>
+  {{end}}
 </div>
 {{end}}

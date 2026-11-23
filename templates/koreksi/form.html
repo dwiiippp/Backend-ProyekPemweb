@@ -1,8 +1,57 @@
 {{define "content"}}
-<div class="card stub">
+<div class="card">
   <h2>{{.Title}}</h2>
-  <p><span class="badge">STUB · Anggota 3</span></p>
-  <p><code>templates/koreksi/form.html</code> — F-10 · UC-14 Koreksi Gaji (BR-11)</p>
-  <p>TODO: Pilih gaji sumber, jenis, nominal, alasan, periode tujuan (terbuka).</p>
+  <p>Koreksi dibuat dari gaji pada periode yang sudah ditutup dan akan otomatis diperhitungkan pada periode tujuan yang masih terbuka.</p>
+
+  {{if and .Data.OpsiGajiSumber .Data.PeriodeTerbuka}}
+  <form method="POST" action="/admin/koreksi">
+    <label for="gaji_sumber_id">Gaji Sumber (Periode Ditutup)
+      <select id="gaji_sumber_id" name="gaji_sumber_id" required>
+        <option value="">Pilih gaji sumber</option>
+        {{range .Data.OpsiGajiSumber}}
+        <option value="{{.GajiID}}" {{if eq $.Data.Form.GajiSumberID .GajiID}}selected{{end}}>
+          {{.NamaPekerja}} ({{.NIK}} · {{.KategoriKerja}}) — {{.JenisPeriode}} {{tanggal .TanggalMulai}} s.d. {{tanggal .TanggalSelesai}} (Bersih: {{rupiah .GajiBersih}})
+        </option>
+        {{end}}
+      </select>
+    </label>
+
+    <label for="periode_gaji_tujuan_id">Periode Tujuan (Terbuka)
+      <select id="periode_gaji_tujuan_id" name="periode_gaji_tujuan_id" required>
+        <option value="">Pilih periode tujuan terbuka</option>
+        {{range .Data.PeriodeTerbuka}}
+        <option value="{{.ID}}" {{if eq $.Data.Form.PeriodeTujuanID .ID}}selected{{end}}>
+          #{{.ID}} · {{.JenisPeriode}} ({{tanggal .TanggalMulai}} s.d. {{tanggal .TanggalSelesai}})
+        </option>
+        {{end}}
+      </select>
+    </label>
+
+    <label for="jenis_koreksi">Jenis Koreksi
+      <select id="jenis_koreksi" name="jenis_koreksi" required>
+        <option value="">Pilih jenis koreksi</option>
+        <option value="tambah" {{if eq .Data.Form.JenisKoreksi "tambah"}}selected{{end}}>Tambah (+)</option>
+        <option value="kurang" {{if eq .Data.Form.JenisKoreksi "kurang"}}selected{{end}}>Kurang (-)</option>
+      </select>
+    </label>
+
+    <label for="nominal">Nominal (Rp)
+      <input type="number" step="0.01" min="0.01" id="nominal" name="nominal" value="{{.Data.Form.Nominal}}" required>
+    </label>
+
+    <label for="alasan">Alasan Koreksi
+      <textarea id="alasan" name="alasan" rows="3" maxlength="2000" style="width:100%;padding:.5rem;margin-top:.25rem;border:1px solid #c4ccd6;border-radius:4px;" required>{{.Data.Form.Alasan}}</textarea>
+    </label>
+
+    <button class="btn" type="submit">Simpan Koreksi</button>
+    <a href="/admin/koreksi">Kembali</a>
+  </form>
+  {{else}}
+  <div class="alert err">
+    {{if not .Data.OpsiGajiSumber}}Belum ada data gaji dari periode yang ditutup untuk dikoreksi.{{end}}
+    {{if not .Data.PeriodeTerbuka}}Belum ada periode gaji berstatus terbuka sebagai tujuan koreksi.{{end}}
+  </div>
+  <p><a href="/admin/koreksi">Kembali ke Daftar Koreksi</a></p>
+  {{end}}
 </div>
 {{end}}
