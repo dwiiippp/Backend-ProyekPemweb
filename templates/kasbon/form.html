@@ -1,8 +1,18 @@
 {{define "content"}}
-<div class="card stub">
+<div class="card">
   <h2>{{.Title}}</h2>
-  <p><span class="badge">STUB · Anggota 2</span></p>
-  <p><code>templates/kasbon/form.html</code> — F-08 · UC-11 Kelola Kasbon · UC-07 Riwayat Kasbon</p>
-  <p>TODO: Form catat pengajuan kasbon.</p>
+  <p>Pengajuan yang dicatat akan memiliki status aktif dan sisa kasbon sebesar nominal pengajuan.</p>
+  <p><a href="/pekerja/kasbon">Kembali ke kasbon saya</a></p>
+</div>
+<div class="card">
+  <form method="post" action="/pekerja/kasbon">
+    <label>Nominal kasbon (Rp)
+      <input type="number" name="nominal" min="0.01" max="9999999999.99" step="0.01" value="{{.Data.Nominal}}" required>
+    </label>
+    <label>Keterangan
+      <textarea name="keterangan" rows="4" maxlength="2000">{{.Data.Keterangan}}</textarea>
+    </label>
+    <button class="btn" type="submit">Catat pengajuan</button>
+  </form>
 </div>
 {{end}}

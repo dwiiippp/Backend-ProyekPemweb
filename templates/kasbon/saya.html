@@ -1,8 +1,24 @@
 {{define "content"}}
-<div class="card stub">
+<div class="card">
   <h2>{{.Title}}</h2>
-  <p><span class="badge">STUB · Anggota 2</span></p>
-  <p><code>templates/kasbon/saya.html</code> — F-08 · UC-11 Kelola Kasbon · UC-07 Riwayat Kasbon</p>
-  <p>TODO: Riwayat kasbon & potongan per periode milik pekerja.</p>
+  <p>Pengajuan kasbon dicatat atas akun Anda. Sisa kasbon aktif akan digunakan dalam proses penggajian.</p>
+  <p><a class="btn" href="/pekerja/kasbon/baru">Ajukan kasbon</a></p>
+</div>
+<div class="card">
+  {{if .Data.Kasbon}}
+  <table>
+    <thead><tr><th>Tanggal</th><th>Nominal</th><th>Sisa</th><th>Status</th><th>Keterangan</th></tr></thead>
+    <tbody>
+      {{range .Data.Kasbon}}
+      <tr>
+        <td>{{tanggal .TanggalPengajuan}}</td><td>{{rupiah .Nominal}}</td><td>{{rupiah .Sisa}}</td>
+        <td>{{.Status}}</td><td>{{if .Keterangan.Valid}}{{.Keterangan.String}}{{else}}-{{end}}</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{else}}
+  <p>Belum ada riwayat kasbon.</p>
+  {{end}}
 </div>
 {{end}}

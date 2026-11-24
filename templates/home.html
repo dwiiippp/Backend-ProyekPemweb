@@ -1,7 +1,35 @@
+
 {{define "content"}}
 <div class="card">
   <h2>Selamat datang, {{.User.Nama}}</h2>
-  <p><span class="badge">STUB · Anggota 1</span> <code>templates/home.html</code></p>
-  <p>TODO: dashboard ringkas sesuai role (admin: jumlah presensi menunggu, periode terbuka; pekerja: jadwal hari ini).</p>
+
+  {{if .User.IsAdmin}}
+    <h3>Dashboard Admin</h3>
+
+    <div class="card">
+      <h3>Presensi Menunggu</h3>
+      <p>{{.Data.PresensiMenunggu}}</p>
+    </div>
+
+    <div class="card">
+      <h3>Periode Gaji Terbuka</h3>
+      <p>{{.Data.PeriodeTerbuka}}</p>
+    </div>
+
+  {{else if .User.IsPekerja}}
+    <h3>Dashboard Pekerja</h3>
+
+    <div class="card">
+      <h3>Jadwal Hari Ini</h3>
+
+      {{if .Data.JadwalHariIni}}
+        <p>Shift: {{.Data.JadwalHariIni.NamaShift}}</p>
+        <p>Jam Masuk: {{.Data.JadwalHariIni.JamMasuk}}</p>
+        <p>Jam Keluar: {{.Data.JadwalHariIni.JamKeluar}}</p>
+      {{else}}
+        <p>Belum ada jadwal kerja hari ini.</p>
+      {{end}}
+    </div>
+  {{end}}
 </div>
 {{end}}

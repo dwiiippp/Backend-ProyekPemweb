@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"log"
 	"net/http"
 
 	"penggajian/internal/model"
@@ -16,18 +17,23 @@ func UserFrom(ctx context.Context) *model.SessionUser {
 }
 
 // Load menaruh user (jika ada session) ke context. Bila devRole terisi dan belum ada
-// session, user dummy sesuai seed (db/seed.sql) disuntikkan — HANYA untuk development.
+// session, user dummy disuntikkan — HANYA untuk development.
 func (m *Manager) Load(devRole string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			u := m.lookup(r)
+			u, err := m.lookup(r.Context(), r)
+			if err != nil {
+				log.Printf("Session lookup: %v", err)
+				http.Error(w, "Terjadi kesalahan pada server", http.StatusInternalServerError)
+				return
+			}
+
 			if u == nil && devRole != "" {
 				u = devUser(devRole)
 			}
-			if u != nil {
-				r = r.WithContext(context.WithValue(r.Context(), ctxKey{}, u))
-			}
-			next.ServeHTTP(w, r)
+
+			ctx := context.WithValue(r.Context(), ctxKey{}, u)
+			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
 }
@@ -35,9 +41,21 @@ func (m *Manager) Load(devRole string) func(http.Handler) http.Handler {
 func devUser(role string) *model.SessionUser {
 	switch model.Role(role) {
 	case model.RoleAdmin:
-		return &model.SessionUser{UserID: 1, Username: "admin", Nama: "Admin Mitra Jaya", Role: model.RoleAdmin}
+		return &model.SessionUser{
+			UserID:   1,
+			Username: "admin",
+			Nama:     "Admin",
+			Role:     model.RoleAdmin,
+		}
+
 	case model.RolePekerja:
-		return &model.SessionUser{UserID: 2, Username: "budi", Nama: "Budi Santoso", Role: model.RolePekerja, PekerjaID: 1}
+		return &model.SessionUser{
+			UserID:    2,
+			Username:  "budi",
+			Nama:      "Budi Santoso",
+			Role:      model.RolePekerja,
+			PekerjaID: 1,
+		}
 	}
 	return nil
 }

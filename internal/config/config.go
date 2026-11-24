@@ -5,7 +5,9 @@ package config
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -23,6 +25,7 @@ type Config struct {
 	// agar tiap anggota bisa menguji halamannya tanpa menunggu modul Auth selesai.
 	// Kosongkan untuk memakai login sungguhan.
 	DevAutoLoginRole string
+	CookieSecure     bool
 }
 
 func (c Config) IsDev() bool { return c.AppEnv == "development" }
@@ -34,7 +37,13 @@ func (c Config) DSN() string {
 
 func Load() Config {
 	loadDotEnv(".env")
+	cookieSecure, err := strconv.ParseBool(get("COOKIE_SECURE", "false"))
+	if err != nil {
+		log.Printf("WARNING: COOKIE_SECURE tidak valid, Secure cookie diaktifkan untuk keamanan")
+		cookieSecure = true
+	}
 	cfg := Config{
+		CookieSecure:     cookieSecure,
 		AppEnv:           get("APP_ENV", "development"),
 		Port:             get("APP_PORT", "8080"),
 		DBHost:           get("DB_HOST", "127.0.0.1"),

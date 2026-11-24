@@ -1,7 +1,25 @@
+
 {{define "content"}}
-<div class="card stub">
+<div class="card">
   <h2>{{.Title}}</h2>
-  <p><span class="badge">STUB · Anggota 1</span> <code>templates/profil.html</code> — UC-02</p>
-  <p>TODO: tampilkan NIK, nama, dan kategori kerja pekerja yang login.</p>
+
+  <h3>Informasi Pribadi</h3>
+
+  <div class="card">
+    <p>
+      <strong>NIK:</strong>
+      {{.Data.NIK}}
+    </p>
+
+    <p>
+      <strong>Nama Lengkap:</strong>
+      {{.Data.Nama}}
+    </p>
+
+    <p>
+      <strong>Kategori Kerja:</strong>
+      {{.Data.KategoriKerja}}
+    </p>
+  </div>
 </div>
 {{end}}

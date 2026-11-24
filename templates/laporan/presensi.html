@@ -1,8 +1,42 @@
 {{define "content"}}
-<div class="card stub">
+<div class="card">
   <h2>{{.Title}}</h2>
-  <p><span class="badge">STUB · Anggota 2</span></p>
-  <p><code>templates/laporan/presensi.html</code> — F-12 Laporan presensi & rekap kasbon</p>
-  <p>TODO: Laporan presensi per rentang tanggal/pekerja.</p>
+  <form method="get" action="/admin/laporan/presensi">
+    <label>Dari tanggal
+      <input type="date" name="mulai" value="{{.Data.Mulai}}" required>
+    </label>
+    <label>Sampai tanggal
+      <input type="date" name="selesai" value="{{.Data.Selesai}}" required>
+    </label>
+    <label>Pekerja
+      <select name="pekerja_id">
+        <option value="0">Semua pekerja</option>
+        {{range .Data.Pekerja}}
+        <option value="{{.ID}}" {{if eq $.Data.PekerjaID .ID}}selected{{end}}>{{.Nama}}</option>
+        {{end}}
+      </select>
+    </label>
+    <button class="btn" type="submit">Tampilkan laporan</button>
+  </form>
+</div>
+<div class="card">
+  {{if .Data.Presensi}}
+  <table>
+    <thead><tr><th>Tanggal</th><th>Pekerja</th><th>NIK</th><th>Shift</th><th>Masuk</th><th>Keluar</th><th>Terlambat</th><th>Lembur</th><th>Status</th><th>Catatan</th></tr></thead>
+    <tbody>
+      {{range .Data.Presensi}}
+      <tr>
+        <td>{{tanggal .Tanggal}}</td><td>{{.NamaPekerja}}</td><td>{{.NIK}}</td><td>{{.NamaShift}}</td>
+        <td>{{.JamMasukAktual.Format "15:04"}}</td><td>{{.JamKeluarAktual.Format "15:04"}}</td>
+        <td>{{if .MenitTerlambat.Valid}}{{.MenitTerlambat.Int64}} menit{{else}}-{{end}}</td>
+        <td>{{if .JamLembur.Valid}}{{.JamLembur.Decimal}} jam{{else}}-{{end}}</td>
+        <td>{{.Status}}</td><td>{{if .Catatan.Valid}}{{.Catatan.String}}{{else}}-{{end}}</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{else}}
+  <p>Tidak ada presensi pada filter tanggal dan pekerja tersebut.</p>
+  {{end}}
 </div>
 {{end}}

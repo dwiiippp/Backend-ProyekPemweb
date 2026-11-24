@@ -1,8 +1,88 @@
 {{define "content"}}
-<div class="card stub">
-  <h2>{{.Title}}</h2>
-  <p><span class="badge">STUB · Anggota 3</span></p>
-  <p><code>templates/penggajian/pratinjau.html</code> — F-07 · F-09 · UC-12 Proses Penggajian · UC-13 Tutup Periode</p>
-  <p>TODO: Pratinjau gaji semua pekerja + daftar kesalahan.</p>
+<div class="card">
+  <h2>{{.Title}} — {{.Data.Pratinjau.Periode.JenisPeriode}}</h2>
+  <p>
+    <strong>Rentang Periode:</strong> {{tanggal .Data.Pratinjau.Periode.TanggalMulai}} s.d. {{tanggal .Data.Pratinjau.Periode.TanggalSelesai}} ·
+    <strong>Status:</strong> <span class="badge">{{.Data.Pratinjau.Periode.Status}}</span>
+  </p>
+  <p>
+    <a href="/admin/penggajian">← Kembali ke Daftar Periode</a> ·
+    <a href="/admin/periode/{{.Data.Pratinjau.Periode.ID}}">Detail Validasi Harian</a>
+  </p>
 </div>
+
+{{if .Data.Pratinjau.Kesalahan}}
+<div class="alert err">
+  <strong>Periode belum memenuhi syarat untuk dikonfirmasi:</strong>
+  <ul>
+    {{range .Data.Pratinjau.Kesalahan}}
+    <li>{{.}}</li>
+    {{end}}
+  </ul>
+  <p><a href="/admin/validasi">Buka Halaman Validasi Presensi</a></p>
+</div>
+{{end}}
+
+<div class="card">
+  <h3>Pratinjau Rincian Gaji Pekerja</h3>
+  {{if .Data.Pratinjau.Items}}
+  <table>
+    <thead>
+      <tr>
+        <th>NIK</th>
+        <th>Nama</th>
+        <th>Hadir</th>
+        <th>Gaji Pokok</th>
+        <th>Pot. Telat</th>
+        <th>Lembur</th>
+        <th>Proporsional</th>
+        <th>Koreksi</th>
+        <th>Gaji Kotor</th>
+        <th>Pot. Kasbon</th>
+        <th>Gaji Bersih</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .Data.Pratinjau.Items}}
+      <tr>
+        <td>{{.Pekerja.NIK}}</td>
+        <td>{{.Pekerja.Nama}}</td>
+        <td>{{.JumlahHariHadir}}</td>
+        <td>{{rupiah .GajiPokok}}</td>
+        <td>{{rupiah .PotonganTerlambat}}</td>
+        <td>{{rupiah .UpahLembur}}</td>
+        <td>{{rupiah .PenyesuaianProporsional}}</td>
+        <td>{{rupiah .TotalKoreksi}}</td>
+        <td>{{rupiah .GajiKotor}}</td>
+        <td>{{rupiah .PotonganKasbon}}</td>
+        <td><strong>{{rupiah .GajiBersih}}</strong></td>
+      </tr>
+      {{end}}
+    </tbody>
+    <tfoot>
+      <tr>
+        <th colspan="8">Total Periode</th>
+        <th>{{rupiah .Data.Pratinjau.TotalGajiKotor}}</th>
+        <th>{{rupiah .Data.Pratinjau.TotalPotonganKasbon}}</th>
+        <th>{{rupiah .Data.Pratinjau.TotalGajiBersih}}</th>
+      </tr>
+    </tfoot>
+  </table>
+  {{else}}
+  <p>Tidak ada data gaji pekerja untuk ditampilkan.</p>
+  {{end}}
+</div>
+
+{{if .Data.Pratinjau.BisaDikonfirmasi}}
+<div class="card">
+  <h3>Konfirmasi &amp; Tutup Periode</h3>
+  <p>Menekan tombol konfirmasi akan menyimpan seluruh data gaji, mencatat potongan kasbon (FIFO), mengurangi sisa kasbon, dan menutup periode ini secara permanen dalam satu transaksi.</p>
+  <form method="POST" action="/admin/penggajian/{{.Data.Pratinjau.Periode.ID}}/konfirmasi">
+    <label for="tanggal_pembayaran">Tanggal Pembayaran
+      <input type="date" id="tanggal_pembayaran" name="tanggal_pembayaran" value="{{.Data.TanggalPembayaranDefault}}" required>
+    </label>
+    <button class="btn" type="submit">Konfirmasi &amp; Tutup Periode</button>
+  </form>
+</div>
+{{end}}
 {{end}}

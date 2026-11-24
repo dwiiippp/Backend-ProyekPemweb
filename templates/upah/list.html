@@ -1,8 +1,38 @@
+
 {{define "content"}}
-<div class="card stub">
+<div class="card">
   <h2>{{.Title}}</h2>
-  <p><span class="badge">STUB · Anggota 1</span></p>
-  <p><code>templates/upah/list.html</code> — F-03 Riwayat Upah (BR-04)</p>
-  <p>TODO: Riwayat upah pekerja, urut tanggal berlaku.</p>
+
+  <div>
+    <a href="/admin/pekerja/{{.Data.PekerjaID}}/upah/baru">
+      + Tambah Riwayat Upah
+    </a>
+    <a href="/admin/pekerja/{{.Data.PekerjaID}}">
+      Kembali ke Detail Pekerja
+    </a>
+  </div>
+
+  {{if .Data.Records}}
+  <table>
+    <thead>
+      <tr>
+        <th>Tanggal Berlaku</th>
+        <th>Nominal Gaji</th>
+        <th>Tanggal Dicatat</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .Data.Records}}
+      <tr>
+        <td>{{.TanggalBerlaku.Format "02-01-2006"}}</td>
+        <td>Rp {{printf "%.2f" .NominalGaji}}</td>
+        <td>{{.CreatedAt.Format "02-01-2006 15:04"}}</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{else}}
+  <p>Belum ada riwayat upah untuk pekerja ini.</p>
+  {{end}}
 </div>
 {{end}}
