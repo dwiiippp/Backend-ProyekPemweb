@@ -226,13 +226,10 @@ func listPekerjaEligible(ctx context.Context, q queryRunner, kategori string, mu
 			p.created_at, p.updated_at
 		FROM pekerja p
 		JOIN users u ON u.id = p.user_id
-		WHERE p.status = 'aktif'
-		  AND p.deleted_at IS NULL
-		  AND u.status = 'aktif'
-		  AND u.deleted_at IS NULL
-		  AND p.kategori_kerja = ?
-		  AND p.tanggal_masuk <= ?
-		  AND (p.tanggal_keluar IS NULL OR p.tanggal_keluar >= ?)
+		WHERE p.deleted_at IS NULL
+			AND p.kategori_kerja = ?
+			AND p.tanggal_masuk <= ?
+			AND (p.tanggal_keluar IS NULL OR p.tanggal_keluar >= ?)
 		ORDER BY p.id ASC`,
 		kategori,
 		selesai.Format("2006-01-02"),

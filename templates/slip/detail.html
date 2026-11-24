@@ -41,7 +41,13 @@
       </tr>
       <tr>
         <td>Potongan Terlambat</td>
-        <td style="text-align:right;">-{{rupiah .Data.Slip.PotonganTerlambat}}</td>
+        <td style="text-align:right;">
+          {{if .Data.Slip.PotonganTerlambat.IsZero}}
+            {{rupiah .Data.Slip.PotonganTerlambat}}
+          {{else}}
+            -{{rupiah .Data.Slip.PotonganTerlambat}}
+          {{end}}
+        </td>
       </tr>
       <tr>
         <th>Gaji Kotor</th>
@@ -49,7 +55,13 @@
       </tr>
       <tr>
         <td>Potongan Kasbon</td>
-        <td style="text-align:right;">-{{rupiah .Data.Slip.PotonganKasbon}}</td>
+        <td style="text-align:right;">
+          {{if .Data.Slip.PotonganKasbon.IsZero}}
+            {{rupiah .Data.Slip.PotonganKasbon}}
+          {{else}}
+            -{{rupiah .Data.Slip.PotonganKasbon}}
+          {{end}}
+        </td>
       </tr>
       <tr>
         <th>GAJI BERSIH DITERIMA</th>
