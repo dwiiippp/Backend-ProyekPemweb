@@ -190,29 +190,3 @@ func (r *PeriodeRepository) RingkasanGajiPeriode(ctx context.Context, periodeID 
 	).Scan(&jumlahPekerja, &totalBersih)
 	return jumlahPekerja, totalBersih, err
 }
-
-func (r *PeriodeRepository) Tutup(ctx context.Context, id int64, tanggalPembayaran time.Time) error {
-	result, err := r.db.ExecContext(ctx, `
-		UPDATE periode_gaji
-		SET status = ?, tanggal_pembayaran = ?
-		WHERE id = ? AND status = ?`,
-		model.PeriodeDitutup,
-		tanggalPembayaran.Format("2006-01-02"),
-		id,
-		model.PeriodeTerbuka,
-	)
-	if err != nil {
-		return err
-	}
-
-	jumlah, err := result.RowsAffected()
-	if err != nil {
-		return err
-	}
-
-	if jumlah == 0 {
-		return sql.ErrNoRows
-	}
-
-	return nil
-}

@@ -211,26 +211,39 @@ func presensiMenunggu(ctx context.Context, q queryRunner, mulai, selesai time.Ti
 
 // ListPekerjaEligible mengambil pekerja aktif yang sesuai kategori dan aktif dalam rentang periode.
 func (r *PenggajianRepository) ListPekerjaEligible(ctx context.Context, kategori string, mulai, selesai time.Time) ([]model.Pekerja, error) {
-	return listPekerjaEligible(ctx, r.db, kategori, mulai, selesai)
+	return listPekerjaEligible(ctx, r.db, kategori, mulai, selesai, false)
 }
 
 func (r *PenggajianRepository) ListPekerjaEligibleTx(ctx context.Context, tx *sql.Tx, kategori string, mulai, selesai time.Time) ([]model.Pekerja, error) {
-	return listPekerjaEligible(ctx, tx, kategori, mulai, selesai)
+	return listPekerjaEligible(ctx, tx, kategori, mulai, selesai, true)
 }
 
-func listPekerjaEligible(ctx context.Context, q queryRunner, kategori string, mulai, selesai time.Time) ([]model.Pekerja, error) {
-	rows, err := q.QueryContext(ctx, `
-		SELECT
+func listPekerjaEligible(ctx context.Context, q queryRunner, kategori string, mulai, selesai time.Time, forUpdate bool) ([]model.Pekerja, error) {
+	query := `
+    SELECT
 			p.id, p.user_id, p.nik, u.nama, p.kategori_kerja,
 			p.tanggal_masuk, p.tanggal_keluar, p.status,
 			p.created_at, p.updated_at
 		FROM pekerja p
 		JOIN users u ON u.id = p.user_id
 		WHERE p.deleted_at IS NULL
+			AND p.status = 'aktif'
+			AND u.status = 'aktif'
+			AND u.deleted_at IS NULL
 			AND p.kategori_kerja = ?
 			AND p.tanggal_masuk <= ?
 			AND (p.tanggal_keluar IS NULL OR p.tanggal_keluar >= ?)
-		ORDER BY p.id ASC`,
+		ORDER BY p.id ASC
+	`
+
+	// TAMBAHKAN FOR UPDATE jika query berjalan dalam transaksi.
+	if forUpdate {
+		query += " FOR UPDATE"
+	}
+
+	rows, err := q.QueryContext(
+		ctx,
+		query,
 		kategori,
 		selesai.Format("2006-01-02"),
 		mulai.Format("2006-01-02"),
@@ -469,14 +482,17 @@ func (r *PenggajianRepository) CatatPotonganKasbon(
 	result, err := tx.ExecContext(ctx, `
 		UPDATE kasbon
 		SET
-			sisa_kasbon = sisa_kasbon - ?,
 			status = CASE
-				WHEN sisa_kasbon - ? <= 0 THEN 'lunas'
+				WHEN sisa_kasbon <= ? THEN 'lunas'
 				ELSE 'aktif'
-			END
+			END,
+			sisa_kasbon = sisa_kasbon - ?
 		WHERE id = ?
-		  AND sisa_kasbon >= ?`,
-		nominalPotongan, nominalPotongan, kasbonID, nominalPotongan,
+		AND sisa_kasbon >= ?`,
+		nominalPotongan,
+		nominalPotongan,
+		kasbonID,
+		nominalPotongan,
 	)
 	if err != nil {
 		return err

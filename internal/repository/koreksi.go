@@ -19,6 +19,10 @@ func NewKoreksiRepository(db *sql.DB) *KoreksiRepository {
 	return &KoreksiRepository{db: db}
 }
 
+func (r *KoreksiRepository) BeginTx(ctx context.Context) (*sql.Tx, error) {
+	return r.db.BeginTx(ctx, nil)
+}
+
 type KoreksiRecord struct {
 	ID                  int64
 	PeriodeTujuanID     int64
@@ -186,48 +190,69 @@ func (r *KoreksiRepository) DaftarPeriodeTerbuka(ctx context.Context) ([]OpsiPer
 	return hasil, rows.Err()
 }
 
-func (r *KoreksiRepository) AmbilInfoGajiSumber(ctx context.Context, gajiID int64) (InfoGajiSumber, error) {
+func (r *KoreksiRepository) AmbilInfoGajiSumberTx(ctx context.Context, tx *sql.Tx, gajiID int64) (InfoGajiSumber, error) {
 	var info InfoGajiSumber
-	err := r.db.QueryRowContext(ctx, `
-		SELECT g.id, g.pekerja_id, p.kategori_kerja, pg.status
-		FROM gaji g
-		JOIN pekerja p ON p.id = g.pekerja_id AND p.deleted_at IS NULL
-		JOIN periode_gaji pg ON pg.id = g.periode_gaji_id
-		WHERE g.id = ?`,
+
+	err := tx.QueryRowContext(ctx, `
+        SELECT
+            g.id,
+            g.pekerja_id,
+            p.kategori_kerja,
+            pg.status
+        FROM gaji g
+        JOIN pekerja p ON p.id = g.pekerja_id
+            AND p.deleted_at IS NULL
+        JOIN periode_gaji pg ON pg.id = g.periode_gaji_id
+        WHERE g.id = ?`,
 		gajiID,
-	).Scan(&info.GajiID, &info.PekerjaID, &info.KategoriKerja, &info.StatusPeriode)
+	).Scan(
+		&info.GajiID,
+		&info.PekerjaID,
+		&info.KategoriKerja,
+		&info.StatusPeriode,
+	)
+
 	return info, err
 }
 
-func (r *KoreksiRepository) AmbilInfoPeriodeTujuan(ctx context.Context, periodeID int64) (InfoPeriodeTujuan, error) {
+func (r *KoreksiRepository) AmbilInfoPeriodeTujuanForUpdateTx(ctx context.Context, tx *sql.Tx, periodeID int64) (InfoPeriodeTujuan, error) {
 	var info InfoPeriodeTujuan
-	err := r.db.QueryRowContext(ctx, `
-		SELECT id, jenis_periode, status
-		FROM periode_gaji
-		WHERE id = ?`,
+
+	err := tx.QueryRowContext(ctx, `
+        SELECT id, jenis_periode, status
+        FROM periode_gaji
+        WHERE id = ?
+        FOR UPDATE`,
 		periodeID,
-	).Scan(&info.ID, &info.JenisPeriode, &info.Status)
+	).Scan(
+		&info.ID,
+		&info.JenisPeriode,
+		&info.Status,
+	)
+
 	return info, err
 }
 
-func (r *KoreksiRepository) Buat(
-	ctx context.Context,
-	periodeTujuanID int64,
-	gajiSumberID int64,
-	pekerjaID int64,
-	jenisKoreksi string,
-	nominal decimal.Decimal,
-	alasan string,
-) (int64, error) {
-	res, err := r.db.ExecContext(ctx, `
-		INSERT INTO koreksi_gaji (
-			periode_gaji_tujuan_id, gaji_sumber_id, pekerja_id,
-			jenis_koreksi, nominal, alasan
-		) VALUES (?, ?, ?, ?, ?, ?)`,
-		periodeTujuanID, gajiSumberID, pekerjaID, jenisKoreksi, nominal, alasan,
+func (r *KoreksiRepository) BuatTx(ctx context.Context, tx *sql.Tx, periodeTujuanID int64, gajiSumberID int64, pekerjaID int64, jenisKoreksi string, nominal decimal.Decimal, alasan string) (int64, error) {
+	res, err := tx.ExecContext(ctx, `
+        INSERT INTO koreksi_gaji (
+            periode_gaji_tujuan_id,
+            gaji_sumber_id,
+            pekerja_id,
+            jenis_koreksi,
+            nominal,
+            alasan
+        ) VALUES (?, ?, ?, ?, ?, ?)`,
+		periodeTujuanID,
+		gajiSumberID,
+		pekerjaID,
+		jenisKoreksi,
+		nominal,
+		alasan,
 	)
 	if err != nil {
 		return 0, err
 	}
+
 	return res.LastInsertId()
 }

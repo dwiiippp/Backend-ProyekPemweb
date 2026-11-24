@@ -36,49 +36,81 @@ func (s *PeriodeService) Daftar(ctx context.Context) ([]model.PeriodeGaji, error
 }
 
 func (s *PeriodeService) Buat(ctx context.Context, periode model.PeriodeGaji) (int64, error) {
+	periode, err := validasiDanNormalisasiPeriode(periode)
+	if err != nil {
+		return 0, err
+	}
+
+	id, err := s.repo.Buat(ctx, periode)
+	if errors.Is(err, repository.ErrPeriodeDuplikat) {
+		return 0, ErrPeriodeDuplikat
+	}
+
+	return id, err
+}
+
+func validasiDanNormalisasiPeriode(
+	periode model.PeriodeGaji,
+) (model.PeriodeGaji, error) {
+
 	if periode.JenisPeriode != model.PeriodeMingguan &&
 		periode.JenisPeriode != model.PeriodeBulanan {
-		return 0, ErrInputTidakValid
+		return model.PeriodeGaji{}, ErrInputTidakValid
 	}
 
 	if periode.TanggalMulai.IsZero() || periode.TanggalSelesai.IsZero() {
-		return 0, ErrInputTidakValid
+		return model.PeriodeGaji{}, ErrInputTidakValid
 	}
 
 	mulai := normTanggal(periode.TanggalMulai)
 	selesai := normTanggal(periode.TanggalSelesai)
 
 	if selesai.Before(mulai) {
-		return 0, ErrInputTidakValid
+		return model.PeriodeGaji{}, ErrInputTidakValid
 	}
 
 	if periode.JenisPeriode == model.PeriodeMingguan {
-		// BR-01: Periode mingguan wajib Senin-Sabtu (6 hari kalender, selisih 5 hari).
-		if mulai.Weekday() != time.Monday || selesai.Weekday() != time.Saturday {
-			return 0, ErrInputTidakValid
+		// BR-01: Senin sampai Sabtu (6 hari kalender).
+		if mulai.Weekday() != time.Monday ||
+			selesai.Weekday() != time.Saturday {
+			return model.PeriodeGaji{}, ErrInputTidakValid
 		}
+
 		if !mulai.AddDate(0, 0, 5).Equal(selesai) {
-			return 0, ErrInputTidakValid
+			return model.PeriodeGaji{}, ErrInputTidakValid
 		}
 	}
 
 	if periode.JenisPeriode == model.PeriodeBulanan {
-		// BR-02: Periode bulanan wajib tanggal 1 s.d. akhir bulan yang sama.
+		// BR-02: Tanggal 1 sampai akhir bulan yang sama.
 		if mulai.Day() != 1 {
-			return 0, ErrInputTidakValid
+			return model.PeriodeGaji{}, ErrInputTidakValid
 		}
-		hariTerakhir := time.Date(mulai.Year(), mulai.Month()+1, 0, 0, 0, 0, 0, time.UTC)
+
+		hariTerakhir := time.Date(
+			mulai.Year(),
+			mulai.Month()+1,
+			0,
+			0, 0, 0, 0,
+			time.UTC,
+		)
+
 		if !selesai.Equal(hariTerakhir) {
-			return 0, ErrInputTidakValid
+			return model.PeriodeGaji{}, ErrInputTidakValid
 		}
 	}
 
 	var tanggalPembayaran *time.Time
-	if periode.TanggalPembayaran != nil && !periode.TanggalPembayaran.IsZero() {
+
+	if periode.TanggalPembayaran != nil &&
+		!periode.TanggalPembayaran.IsZero() {
+
 		tglBayar := normTanggal(*periode.TanggalPembayaran)
+
 		if tglBayar.Before(selesai) {
-			return 0, ErrInputTidakValid
+			return model.PeriodeGaji{}, ErrInputTidakValid
 		}
+
 		tanggalPembayaran = &tglBayar
 	}
 
@@ -87,11 +119,7 @@ func (s *PeriodeService) Buat(ctx context.Context, periode model.PeriodeGaji) (i
 	periode.TanggalPembayaran = tanggalPembayaran
 	periode.Status = model.PeriodeTerbuka
 
-	id, err := s.repo.Buat(ctx, periode)
-	if errors.Is(err, repository.ErrPeriodeDuplikat) {
-		return 0, ErrPeriodeDuplikat
-	}
-	return id, err
+	return periode, nil
 }
 
 func (s *PeriodeService) AmbilByID(ctx context.Context, id int64) (model.PeriodeGaji, error) {
@@ -137,23 +165,6 @@ func (s *PeriodeService) Detail(ctx context.Context, id int64) (DetailPeriode, e
 		JumlahPekerja:        jumlahPekerja,
 		TotalGajiBersih:      totalBersih,
 	}, nil
-}
-
-func (s *PeriodeService) Tutup(ctx context.Context, id int64, tanggalPembayaran time.Time) error {
-	if id <= 0 || tanggalPembayaran.IsZero() {
-		return ErrInputTidakValid
-	}
-
-	periode, err := s.AmbilByID(ctx, id)
-	if err != nil {
-		return err
-	}
-
-	if periode.Status == model.PeriodeDitutup {
-		return ErrPeriodeDitutup
-	}
-
-	return s.repo.Tutup(ctx, id, tanggalPembayaran)
 }
 
 func normTanggal(t time.Time) time.Time {

@@ -115,11 +115,123 @@ func TestDetailPeriodeIDTidakValid(t *testing.T) {
 	}
 }
 
-func TestTutupInputTidakValid(t *testing.T) {
-	s := &PeriodeService{}
+func TestKategoriUntukPeriode(t *testing.T) {
+	tests := []struct {
+		nama         string
+		jenisPeriode string
+		want         string
+	}{
+		{
+			nama:         "periode mingguan untuk pekerja harian",
+			jenisPeriode: model.PeriodeMingguan,
+			want:         model.KategoriHarian,
+		},
+		{
+			nama:         "periode bulanan untuk pekerja bulanan",
+			jenisPeriode: model.PeriodeBulanan,
+			want:         model.KategoriBulanan,
+		},
+	}
 
-	err := s.Tutup(context.Background(), 0, time.Time{})
-	if !errors.Is(err, ErrInputTidakValid) {
-		t.Fatalf("ingin ErrInputTidakValid, mendapat: %v", err)
+	for _, tt := range tests {
+		t.Run(tt.nama, func(t *testing.T) {
+			got := kategoriUntukPeriode(tt.jenisPeriode)
+
+			if got != tt.want {
+				t.Errorf(
+					"kategoriUntukPeriode(%q) = %q, ingin %q",
+					tt.jenisPeriode,
+					got,
+					tt.want,
+				)
+			}
+		})
+	}
+}
+
+func TestValidasiDanNormalisasiPeriodeValid(t *testing.T) {
+	tgl := func(y int, m time.Month, d int) time.Time {
+		return time.Date(y, m, d, 0, 0, 0, 0, time.Local)
+	}
+
+	tests := []struct {
+		nama        string
+		periode     model.PeriodeGaji
+		wantMulai   time.Time
+		wantSelesai time.Time
+		wantBayar   *time.Time
+	}{
+		{
+			nama: "periode mingguan valid",
+			periode: model.PeriodeGaji{
+				JenisPeriode:   model.PeriodeMingguan,
+				TanggalMulai:   tgl(2026, 10, 19),
+				TanggalSelesai: tgl(2026, 10, 24),
+				Status:         model.PeriodeDitutup,
+			},
+			wantMulai:   tgl(2026, 10, 19),
+			wantSelesai: tgl(2026, 10, 24),
+		},
+		{
+			nama: "periode bulanan valid",
+			periode: model.PeriodeGaji{
+				JenisPeriode:   model.PeriodeBulanan,
+				TanggalMulai:   tgl(2026, 10, 1),
+				TanggalSelesai: tgl(2026, 10, 31),
+			},
+			wantMulai:   tgl(2026, 10, 1),
+			wantSelesai: tgl(2026, 10, 31),
+		},
+		{
+			nama: "periode mingguan dengan tanggal pembayaran valid",
+			periode: model.PeriodeGaji{
+				JenisPeriode:   model.PeriodeMingguan,
+				TanggalMulai:   tgl(2026, 10, 19),
+				TanggalSelesai: tgl(2026, 10, 24),
+				TanggalPembayaran: func() *time.Time {
+					v := tgl(2026, 10, 25)
+					return &v
+				}(),
+			},
+			wantMulai:   tgl(2026, 10, 19),
+			wantSelesai: tgl(2026, 10, 24),
+			wantBayar: func() *time.Time {
+				v := tgl(2026, 10, 25)
+				return &v
+			}(),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.nama, func(t *testing.T) {
+			got, err := validasiDanNormalisasiPeriode(tt.periode)
+
+			if err != nil {
+				t.Fatalf("seharusnya valid, mendapat error: %v", err)
+			}
+
+			if !got.TanggalMulai.Equal(normTanggal(tt.wantMulai)) {
+				t.Errorf("tanggal mulai tidak sesuai")
+			}
+
+			if !got.TanggalSelesai.Equal(normTanggal(tt.wantSelesai)) {
+				t.Errorf("tanggal selesai tidak sesuai")
+			}
+
+			if got.Status != model.PeriodeTerbuka {
+				t.Errorf("status seharusnya terbuka, mendapat %q", got.Status)
+			}
+
+			if tt.wantBayar == nil {
+				if got.TanggalPembayaran != nil {
+					t.Errorf("tanggal pembayaran seharusnya nil")
+				}
+			} else {
+				if got.TanggalPembayaran == nil ||
+					!got.TanggalPembayaran.Equal(normTanggal(*tt.wantBayar)) {
+					t.Errorf("tanggal pembayaran tidak sesuai")
+				}
+			}
+		})
 	}
 }

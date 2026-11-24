@@ -89,38 +89,68 @@ func CocokKategoriPeriode(kategoriKerja, jenisPeriode string) bool {
 }
 
 func (s *KoreksiService) Buat(ctx context.Context, input InputKoreksi) (int64, error) {
+	// 1. Validasi input dasar.
 	nominal, alasan, err := ValidasiDasarKoreksi(input)
 	if err != nil {
 		return 0, err
 	}
 
-	sumber, err := s.repo.AmbilInfoGajiSumber(ctx, input.GajiSumberID)
+	// 2. Mulai transaksi.
+	tx, err := s.repo.BeginTx(ctx)
+	if err != nil {
+		return 0, err
+	}
+	defer tx.Rollback()
+
+	// 3. Kunci periode tujuan.
+	// Harus dilakukan sebelum membaca dan menyimpan koreksi.
+	tujuan, err := s.repo.AmbilInfoPeriodeTujuanForUpdateTx(
+		ctx,
+		tx,
+		input.PeriodeTujuanID,
+	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return 0, ErrTidakDitemukan
 		}
 		return 0, err
 	}
+
+	// 4. Pastikan periode tujuan masih terbuka.
+	if tujuan.Status != model.PeriodeTerbuka {
+		return 0, ErrPeriodeDitutup
+	}
+
+	// 5. Ambil informasi gaji sumber dalam transaksi yang sama.
+	sumber, err := s.repo.AmbilInfoGajiSumberTx(
+		ctx,
+		tx,
+		input.GajiSumberID,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return 0, ErrTidakDitemukan
+		}
+		return 0, err
+	}
+
+	// 6. Pastikan periode sumber sudah ditutup.
 	if sumber.StatusPeriode != model.PeriodeDitutup {
 		return 0, ErrInputTidakValid
 	}
 
-	tujuan, err := s.repo.AmbilInfoPeriodeTujuan(ctx, input.PeriodeTujuanID)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return 0, ErrTidakDitemukan
-		}
-		return 0, err
-	}
-	if tujuan.Status != model.PeriodeTerbuka {
-		return 0, ErrPeriodeDitutup
-	}
-	if !CocokKategoriPeriode(sumber.KategoriKerja, tujuan.JenisPeriode) {
+	// 7. Pastikan kategori pekerja sesuai jenis periode tujuan.
+	if !CocokKategoriPeriode(
+		sumber.KategoriKerja,
+		tujuan.JenisPeriode,
+	) {
 		return 0, ErrInputTidakValid
 	}
 
-	return s.repo.Buat(
+	// 8. Simpan koreksi menggunakan transaksi yang sama.
+	id, err := s.repo.BuatTx(
 		ctx,
+		tx,
 		tujuan.ID,
 		sumber.GajiID,
 		sumber.PekerjaID,
@@ -128,4 +158,14 @@ func (s *KoreksiService) Buat(ctx context.Context, input InputKoreksi) (int64, e
 		nominal,
 		alasan,
 	)
+	if err != nil {
+		return 0, err
+	}
+
+	// 9. Commit jika semua proses berhasil.
+	if err := tx.Commit(); err != nil {
+		return 0, err
+	}
+
+	return id, nil
 }

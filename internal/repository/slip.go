@@ -238,10 +238,28 @@ func (r *SlipRepository) DetailByGajiID(ctx context.Context, gajiID int64) (Deta
 
 	kasbonRows, err := r.db.QueryContext(ctx, `
 		SELECT
-			pk.kasbon_id, k.tanggal_pengajuan, k.nominal_kasbon,
-			pk.nominal_potongan, k.sisa_kasbon, k.status
+			pk.kasbon_id,
+			k.tanggal_pengajuan,
+			k.nominal_kasbon,
+			pk.nominal_potongan,
+			COALESCE((
+				SELECT SUM(pk2.nominal_potongan)
+				FROM potongan_kasbon_gaji pk2
+				JOIN gaji g2 ON g2.id = pk2.gaji_id
+				JOIN periode_gaji pg2 ON pg2.id = g2.periode_gaji_id
+				WHERE pk2.kasbon_id = pk.kasbon_id
+				AND (
+					pg2.tanggal_selesai < pg.tanggal_selesai
+					OR (
+						pg2.tanggal_selesai = pg.tanggal_selesai
+						AND pg2.tanggal_mulai <= pg.tanggal_mulai
+					)
+				)
+			), 0) AS total_potongan_historis
 		FROM potongan_kasbon_gaji pk
 		JOIN kasbon k ON k.id = pk.kasbon_id
+		JOIN gaji g ON g.id = pk.gaji_id
+		JOIN periode_gaji pg ON pg.id = g.periode_gaji_id
 		WHERE pk.gaji_id = ?
 		ORDER BY k.tanggal_pengajuan ASC, k.id ASC`,
 		gajiID,
@@ -253,13 +271,36 @@ func (r *SlipRepository) DetailByGajiID(ctx context.Context, gajiID int64) (Deta
 
 	for kasbonRows.Next() {
 		var k RincianPotonganKasbonSlip
+		var totalPotonganHistoris decimal.Decimal
+
 		if err := kasbonRows.Scan(
-			&k.KasbonID, &k.TanggalPengajuan, &k.NominalKasbon,
-			&k.NominalPotongan, &k.SisaKasbon, &k.StatusKasbon,
+			&k.KasbonID,
+			&k.TanggalPengajuan,
+			&k.NominalKasbon,
+			&k.NominalPotongan,
+			&totalPotonganHistoris,
 		); err != nil {
 			return DetailSlip{}, err
 		}
-		slip.PotonganKasbonRincian = append(slip.PotonganKasbonRincian, k)
+
+		k.SisaKasbon = k.NominalKasbon.
+			Sub(totalPotonganHistoris).
+			Round(2)
+
+		if k.SisaKasbon.IsNegative() {
+			k.SisaKasbon = decimal.Zero
+		}
+
+		if k.SisaKasbon.IsZero() {
+			k.StatusKasbon = "lunas"
+		} else {
+			k.StatusKasbon = "aktif"
+		}
+
+		slip.PotonganKasbonRincian = append(
+			slip.PotonganKasbonRincian,
+			k,
+		)
 	}
 	if err := kasbonRows.Err(); err != nil {
 		return DetailSlip{}, err
