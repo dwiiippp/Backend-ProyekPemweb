@@ -1,8 +1,129 @@
 {{define "content"}}
-<div class="card stub">
-  <h2>{{.Title}}</h2>
-  <p><span class="badge">STUB · Anggota 3</span></p>
-  <p><code>templates/slip/detail.html</code> — F-11 · UC-06 Lihat Slip · UC-15 Cetak Slip (BR-12)</p>
-  <p>TODO: Slip siap cetak (CSS print).</p>
+<style>
+  @media print { .no-print { display: none !important; } }
+</style>
+
+<div class="card no-print">
+  <button class="btn" type="button" onclick="window.print()">Cetak Slip Gaji</button>
+  <a href="{{.Data.BackURL}}" style="margin-left:.75rem;">← Kembali</a>
 </div>
+
+<div class="card">
+  <h2>SLIP GAJI — KONVEKSI MITRA JAYA</h2>
+  <p>
+    <strong>Nama Pekerja:</strong> {{.Data.Slip.NamaPekerja}} ({{.Data.Slip.NIK}}) ·
+    <strong>Kategori:</strong> {{.Data.Slip.KategoriKerja}}
+  </p>
+  <p>
+    <strong>Periode:</strong> {{.Data.Slip.JenisPeriode}} ({{tanggal .Data.Slip.TanggalMulai}} s.d. {{tanggal .Data.Slip.TanggalSelesai}}) ·
+    <strong>Tanggal Pembayaran:</strong> {{tanggal .Data.Slip.TanggalPembayaran}} ·
+    <strong>Hari Hadir:</strong> {{.Data.Slip.JumlahHariHadir}} hari
+  </p>
+
+  <h3>Rincian Pendapatan &amp; Potongan</h3>
+  <table>
+    <tbody>
+      <tr>
+        <td>Gaji Pokok</td>
+        <td style="text-align:right;">{{rupiah .Data.Slip.GajiPokok}}</td>
+      </tr>
+      <tr>
+        <td>Upah Lembur</td>
+        <td style="text-align:right;">{{rupiah .Data.Slip.UpahLembur}}</td>
+      </tr>
+      <tr>
+        <td>Penyesuaian Proporsional</td>
+        <td style="text-align:right;">{{rupiah .Data.Slip.PenyesuaianProporsional}}</td>
+      </tr>
+      <tr>
+        <td>Koreksi Gaji</td>
+        <td style="text-align:right;">{{rupiah .Data.Slip.TotalKoreksi}}</td>
+      </tr>
+      <tr>
+        <td>Potongan Terlambat</td>
+        <td style="text-align:right;">
+          {{if .Data.Slip.PotonganTerlambat.IsZero}}
+            {{rupiah .Data.Slip.PotonganTerlambat}}
+          {{else}}
+            -{{rupiah .Data.Slip.PotonganTerlambat}}
+          {{end}}
+        </td>
+      </tr>
+      <tr>
+        <th>Gaji Kotor</th>
+        <th style="text-align:right;">{{rupiah .Data.Slip.GajiKotor}}</th>
+      </tr>
+      <tr>
+        <td>Potongan Kasbon</td>
+        <td style="text-align:right;">
+          {{if .Data.Slip.PotonganKasbon.IsZero}}
+            {{rupiah .Data.Slip.PotonganKasbon}}
+          {{else}}
+            -{{rupiah .Data.Slip.PotonganKasbon}}
+          {{end}}
+        </td>
+      </tr>
+      <tr>
+        <th>GAJI BERSIH DITERIMA</th>
+        <th style="text-align:right;">{{rupiah .Data.Slip.GajiBersih}}</th>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+{{if .Data.Slip.PotonganKasbonRincian}}
+<div class="card">
+  <h3>Rincian Potongan Kasbon</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>ID Kasbon</th>
+        <th>Tanggal Pengajuan</th>
+        <th>Nominal Awal</th>
+        <th>Dipotong Periode Ini</th>
+        <th>Sisa Kasbon</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .Data.Slip.PotonganKasbonRincian}}
+      <tr>
+        <td>#{{.KasbonID}}</td>
+        <td>{{tanggal .TanggalPengajuan}}</td>
+        <td>{{rupiah .NominalKasbon}}</td>
+        <td>{{rupiah .NominalPotongan}}</td>
+        <td>{{rupiah .SisaKasbon}}</td>
+        <td><span class="badge">{{.StatusKasbon}}</span></td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+</div>
+{{end}}
+
+{{if .Data.Slip.KoreksiRincian}}
+<div class="card">
+  <h3>Rincian Koreksi Gaji yang Diterapkan</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>ID Koreksi</th>
+        <th>Jenis</th>
+        <th>Nominal</th>
+        <th>Alasan</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .Data.Slip.KoreksiRincian}}
+      <tr>
+        <td>#{{.ID}}</td>
+        <td><span class="badge">{{.JenisKoreksi}}</span></td>
+        <td>{{rupiah .Nominal}}</td>
+        <td>{{.Alasan}}</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+</div>
+{{end}}
 {{end}}

@@ -1,8 +1,42 @@
 {{define "content"}}
-<div class="card stub">
+<div class="card">
   <h2>{{.Title}}</h2>
-  <p><span class="badge">STUB · Anggota 3</span></p>
-  <p><code>templates/koreksi/list.html</code> — F-10 · UC-14 Koreksi Gaji (BR-11)</p>
-  <p>TODO: Daftar koreksi.</p>
+  <p>Daftar koreksi gaji (penambahan atau pengurangan) yang diterapkan ke periode tujuan terbuka (BR-11).</p>
+  <p>
+    <a class="btn" href="/admin/koreksi/baru">+ Tambah Koreksi Gaji</a>
+  </p>
+</div>
+
+<div class="card">
+  {{if .Data.Koreksi}}
+  <table>
+    <thead>
+      <tr>
+        <th>Pekerja</th>
+        <th>Gaji Sumber</th>
+        <th>Periode Tujuan</th>
+        <th>Jenis</th>
+        <th>Nominal</th>
+        <th>Alasan</th>
+        <th>Dicatat</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .Data.Koreksi}}
+      <tr>
+        <td>{{.NamaPekerja}} ({{.NIK}})</td>
+        <td>#{{.GajiSumberID}} ({{tanggal .MulaiSumber}} s.d. {{tanggal .SelesaiSumber}})</td>
+        <td>{{.JenisPeriodeTujuan}} ({{tanggal .MulaiTujuan}} s.d. {{tanggal .SelesaiTujuan}}) · <span class="badge">{{.StatusPeriodeTujuan}}</span></td>
+        <td><span class="badge">{{.JenisKoreksi}}</span></td>
+        <td>{{rupiah .Nominal}}</td>
+        <td>{{.Alasan}}</td>
+        <td>{{tanggal .DibuatPada}}</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{else}}
+  <p>Belum ada catatan koreksi gaji.</p>
+  {{end}}
 </div>
 {{end}}

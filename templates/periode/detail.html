@@ -1,8 +1,70 @@
 {{define "content"}}
-<div class="card stub">
-  <h2>{{.Title}}</h2>
-  <p><span class="badge">STUB · Anggota 3</span></p>
-  <p><code>templates/periode/detail.html</code> — Periode Gaji (BR-01, BR-02, BR-10)</p>
-  <p>TODO: Detail periode + status validasi hari-hari di dalamnya.</p>
+<div class="card">
+  <h2>{{.Title}} #{{.Data.Detail.Periode.ID}}</h2>
+  <p>
+    <strong>Jenis:</strong> {{.Data.Detail.Periode.JenisPeriode}} ·
+    <strong>Rentang:</strong> {{tanggal .Data.Detail.Periode.TanggalMulai}} s.d. {{tanggal .Data.Detail.Periode.TanggalSelesai}} ·
+    <strong>Pembayaran:</strong> {{tanggal .Data.TanggalPembayaran}} ·
+    <strong>Status:</strong> <span class="badge">{{.Data.Detail.Periode.Status}}</span>
+  </p>
+
+  {{if .Data.Terbuka}}
+    {{if .Data.Detail.SemuaHariTervalidasi}}
+    <p class="alert ok">Semua hari kerja terjadwal pada periode ini sudah divalidasi.</p>
+    {{else}}
+    <p class="alert err">Belum semua hari kerja pada periode ini divalidasi harian (atau belum ada jadwal kerja).</p>
+    {{end}}
+    <p>
+      <a class="btn" href="/admin/penggajian/{{.Data.Detail.Periode.ID}}/pratinjau">Pratinjau &amp; Proses Penggajian</a>
+      <a href="/admin/periode">Kembali ke Daftar</a>
+    </p>
+  {{else}}
+    <p>
+      <strong>Ringkasan Gaji Tersimpan:</strong> {{.Data.Detail.JumlahPekerja}} pekerja · Total Gaji Bersih {{rupiah .Data.Detail.TotalGajiBersih}}
+    </p>
+    <p>
+      <a class="btn" href="/admin/penggajian/{{.Data.Detail.Periode.ID}}/hasil">Lihat Hasil Penggajian</a>
+      <a href="/admin/slip?periode_id={{.Data.Detail.Periode.ID}}">Lihat Slip Gaji</a>
+      <a href="/admin/periode">Kembali ke Daftar</a>
+    </p>
+  {{end}}
+</div>
+
+<div class="card">
+  <h3>Status Validasi Presensi per Hari Terjadwal</h3>
+  {{if .Data.Detail.Hari}}
+  <table>
+    <thead>
+      <tr>
+        <th>Tanggal</th>
+        <th>Total Jadwal</th>
+        <th>Disetujui</th>
+        <th>Menunggu</th>
+        <th>Ditolak</th>
+        <th>Validasi Harian</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .Data.Detail.Hari}}
+      <tr>
+        <td>{{tanggal .Tanggal}}</td>
+        <td>{{.JumlahJadwal}}</td>
+        <td>{{.JumlahDisetujui}}</td>
+        <td>{{.JumlahMenunggu}}</td>
+        <td>{{.JumlahDitolak}}</td>
+        <td>
+          {{if .SudahDivalidasi}}
+            <span class="badge">Ditutup</span> ({{tanggal .DivalidasiPada}})
+          {{else}}
+            Belum divalidasi · <a href="/admin/validasi">Validasi</a>
+          {{end}}
+        </td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{else}}
+  <p>Belum ada jadwal kerja yang tercatat dalam rentang tanggal periode ini.</p>
+  {{end}}
 </div>
 {{end}}
